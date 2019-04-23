@@ -1,8 +1,34 @@
-/* add css styles here (optional) */
-
-.test {
-  display: inline-block;
-  margin: 2em auto;
-  border: 2px solid #000;
-  font-size: 2em;
+.timeline {
+  position: relative;
+  background-color: palegoldenrod;
+  width: 100%;
+  overflow: hidden;
 }
+
+
+li {
+  display: inline-block;
+}
+
+button {
+  margin: 0 10rem;
+  background-color: pink;
+}
+
+
+.slider {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+}
+
+
+/* body.grabbing {
+  cursor: -webkit-grabbing !important;
+  cursor: grabbing !important;
+} */
