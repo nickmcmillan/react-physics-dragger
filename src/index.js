@@ -1,10 +1,8 @@
 import * as React from 'react'
 import styles from './styles.css'
 
-
 let isDragging = false
 
-// let this.mousedownX = 0
 let dragStartPositionX = 0
 
 // function goToPosition(pos) {
@@ -30,8 +28,9 @@ export default class Dragger extends React.Component {
       restPositionX: this.settings.padding
     }
 
+    this.inputType = ''
     this.velocityX = 0
-    this.mousedownX = 0
+    this.downX = 0
     this.dragPositionX = this.nativePositionX
     this.nativePositionX = this.settings.padding // starting position
   }
@@ -45,21 +44,38 @@ export default class Dragger extends React.Component {
     this.update()
   }
 
-  update = () => {
-    console.log('y')
-    
-    this.velocityX *= this.settings.friction
+  componentWillUnmount() {
+    window.removeEventListener('mousemove', this.onMouseMove)
+    window.removeEventListener('mouseup', this.onMouseup)
+    window.removeEventListener('touchmove', this.onMouseMove)
+    window.removeEventListener('touchend', this.onTouchEnd)
+  }
 
+  update = () => {
+
+    this.velocityX *= this.settings.friction
+    
+
+    // this.applyBoundForce(-400)
+    // this.applyBoundForce()
     this.applyLeftBoundForce()
     this.applyRightBoundForce()
     this.applyDragForce()
     this.nativePositionX += this.velocityX
 
     const isInfinitesimal = Math.round(Math.abs(this.velocityX) * 1000) / 1000 < 0.0001
+    // console.log(isDragging)
+    
+    if (isInfinitesimal && !isDragging) {
+      // console.log('stop')
+      
+      // window.cancelAnimationFrame(this.update)
+      // return
+    }
     // if (isInfinitesimal && !isDragging) {
     //   // drag complete
     //   // this.velocityX = 0
-    //   // this.mousedownX = 0
+    //   // this.downX = 0
     //   // dragStartPositionX = 0
     //   this.setState({ restPositionX: this.nativePositionX })
     //   // window.cancelAnimationFrame(this.update)
@@ -67,8 +83,27 @@ export default class Dragger extends React.Component {
     //   // bypass reacts render method
     //   this.draggerRefInner.current.style.transform = `translate3d(${Math.round(this.nativePositionX * 1000) / 1000}px,0,0)`
     // }
-    this.setState({ restPositionX: this.nativePositionX })
     window.requestAnimationFrame(this.update)
+    this.setState({ restPositionX: this.nativePositionX })
+    
+  }
+
+  applyBoundForce = (bound) => {
+    if (isDragging || this.nativePositionX < bound) return
+
+    // bouncing past bound
+    const distance = bound - this.nativePositionX
+    let force = distance * this.settings.stiffness
+    // calculate resting position with this force
+    const rest = this.nativePositionX + (this.velocityX + force) / (1 - this.settings.friction)
+    // apply force if resting position is out of bounds
+    if (rest > bound) {
+      this.applyForce(force)
+    } else {
+      // if in bounds, apply force to align at bounds
+      force = distance * this.settings.stiffness - this.velocityX
+      this.applyForce(force)
+    }
   }
 
   applyRightBoundForce = () => {
@@ -116,63 +151,51 @@ export default class Dragger extends React.Component {
     this.velocityX += force
   }
 
-  onMouseMove = (e) => {
-    // this.velocityX = 0
-    // this.mousedownX = 0
-    // dragStartPositionX = 0
-    const moveX = e.pageX - this.mousedownX
+  onMove = (e) => {
+    const x = this.inputType === 'mouse' ? e.pageX : e.touches[0].pageX
+    const moveX = x - this.downX
     this.dragPositionX = dragStartPositionX + moveX
-    e.preventDefault()
+    // e.preventDefault()
   }
 
-  onMouseup = () => {
+  onRelease = () => {
     isDragging = false
     document.documentElement.style.cursor = ''
+    const isInfinitesimal = Math.round(Math.abs(this.velocityX) * 1000) / 1000 < 0.0001
+
+    // if (isInfinitesimal) {
+    //   window.cancelAnimationFrame(this.update)
+    // }
   }
 
-  // componentWillUnmount() {
-  //   window.removeEventListener('mousemove', this.onMouseMove)
-  //   window.removeEventListener('mouseup', this.onMouseup)
-  //   window.removeEventListener('touchmove', this.onMouseMove)
-  //   window.removeEventListener('touchend', this.onTouchEnd)
+  onStart = (e) => {
+    this.inputType = e.type === 'mousedown' ? 'mouse' : 'touch'
 
-  // }
-
-  onTouchEnd = () => {
-    isDragging = false
-  }
-
-  handleTouchStart = (e) => {
-    isDragging = true
-    this.mousedownX = e.pageX
-    dragStartPositionX = this.nativePositionX
-    this.onMouseMove(e)
-    this.update()
-    // window.addEventListener('touchmove', this.onMouseMove)
-    // window.addEventListener('touchend', this.onTouchEnd)
-  }
-
-  onMouseDown = (e) => {
     isDragging = true
     document.documentElement.style.cursor = 'grabbing'
-    this.mousedownX = e.pageX
+    this.downX = this.inputType === 'mouse' ? e.pageX : e.touches[0].pageX
     dragStartPositionX = this.nativePositionX
-    this.onMouseMove(e)
-    // this.update()
+    this.onMove(e)
+
+    if (this.inputType === 'mouse') {
+      window.addEventListener('mousemove', this.onMove)
+      window.addEventListener('mouseup', this.onRelease)
+    } else {
+      window.addEventListener('touchmove', this.onMove)
+      window.addEventListener('touchend', this.onRelease)
+    }
   }
 
   render() {
-    console.log('render')
+    // console.log('render')
     return (
       <section
         className={styles.timeline}
-        onMouseUp={this.onMouseup}
-        onMouseDown={this.onMouseDown}
-        onMouseMove={this.onMouseMove}
-        onTouchStart={this.handleTouchStart}
+        onTouchStart={this.onStart}
+        onMouseDown={this.onStart}
         ref={this.draggerRef}
         style={{
-          ...this.props.style
+          ...this.props.style,
         }}
       >
 
