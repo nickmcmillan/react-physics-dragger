@@ -24,10 +24,11 @@ export default class Dragger extends React.Component {
     }
 
     this.state = {
-      restPositionX: this.settings.padding
+      restPositionX: this.settings.padding,
+      isDragging: false,
     }
 
-    this.isDragging = false
+    this.docStyle = document.documentElement.style
     this.inputType = ''
     this.velocityX = 0
     this.downX = 0
@@ -43,27 +44,19 @@ export default class Dragger extends React.Component {
 
     this.rightBound = this.draggerRef.current.clientLeft + this.settings.padding
     this.leftBound = -widthInner + width - this.settings.padding
-    // this.update()
   }
-
-  // componentWillUnmount() {
-  //   window.removeEventListener('mousemove', this.onMouseMove)
-  //   window.removeEventListener('mouseup', this.onMouseup)
-  //   window.removeEventListener('touchmove', this.onMouseMove)
-  //   window.removeEventListener('touchend', this.onTouchEnd)
-  // }
 
   update = () => {
     this.velocityX *= this.settings.friction
     this.applyDragForce()
 
-    if (!this.isDragging && this.nativePositionX < this.leftBound) this.applyLeftBoundForce()
-    if (!this.isDragging && this.nativePositionX > this.rightBound) this.applyRightBoundForce()
+    if (!this.state.isDragging && this.nativePositionX < this.leftBound) this.applyLeftBoundForce()
+    if (!this.state.isDragging && this.nativePositionX > this.rightBound) this.applyRightBoundForce()
     this.nativePositionX += this.velocityX
 
     const isInfinitesimal = Math.round(Math.abs(this.velocityX) * 1000) / 1000 < 0.0001
 
-    if (isInfinitesimal && !this.isDragging) {
+    if (isInfinitesimal && !this.state.isDragging) {
       // console.log('stop')
       window.cancelAnimationFrame(this.rafId)
       this.setState({ restPositionX: this.nativePositionX })
@@ -104,7 +97,7 @@ export default class Dragger extends React.Component {
   }
 
   applyDragForce = () => {
-    if (!this.isDragging) return
+    if (!this.state.isDragging) return
 
     const dragVelocity = this.dragPositionX - this.nativePositionX
     const dragForce = dragVelocity - this.velocityX
@@ -122,8 +115,11 @@ export default class Dragger extends React.Component {
   }
 
   onRelease = () => {
-    this.isDragging = false
-    document.documentElement.style.cursor = ''
+    this.setState({ isDragging: false })
+
+    // Update html element styles
+    this.docStyle.cursor = ''
+    this.docStyle.userSelect = ''
 
     if (this.inputType === 'mouse') {
       window.removeEventListener('mousemove', this.onMove)
@@ -135,15 +131,17 @@ export default class Dragger extends React.Component {
   }
 
   onStart = (e) => {
+    this.setState({ isDragging: true })
     // console.log('start')
     window.cancelAnimationFrame(this.rafId) // cancel any existing loop
     this.rafId = window.requestAnimationFrame(this.update) // kick off a new loop
 
     this.inputType = e.type === 'mousedown' ? 'mouse' : 'touch'
 
-    document.documentElement.style.cursor = 'grabbing'
+    // Update html element styles
+    this.docStyle.cursor = 'grabbing'
+    this.docStyle.userSelect = 'none'
     this.downX = this.inputType === 'mouse' ? e.pageX : e.touches[0].pageX
-    this.isDragging = true
     this.dragStartPositionX = this.nativePositionX
 
     this.onMove(e)
@@ -165,7 +163,10 @@ export default class Dragger extends React.Component {
         onTouchStart={this.onStart}
         onMouseDown={this.onStart}
         ref={this.draggerRef}
-        style={{ ...this.props.style }}
+        style={{ 
+          ...this.props.style,
+          cursor: this.state.isDragging ? 'grabbing' : 'grab'
+        }}
       >
         <div
           ref={this.draggerRefInner}
