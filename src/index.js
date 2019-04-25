@@ -39,8 +39,8 @@ export default class Dragger extends React.Component {
     const widthOuter = this.draggerRefOuter.current.offsetWidth
     const widthInner = this.draggerRefInner.current.offsetWidth
 
-    this.rightBound = this.draggerRefOuter.current.clientLeft + this.settings.padding
     this.leftBound = -widthInner + widthOuter - this.settings.padding
+    this.rightBound = this.draggerRefOuter.current.clientLeft + this.settings.padding
   }
 
   roundNum = num => Math.round(num * 1000) / 1000
@@ -49,11 +49,11 @@ export default class Dragger extends React.Component {
     this.velocityX *= this.settings.friction
     this.applyDragForce()
 
-    if (!this.state.isDragging && this.nativePositionX < this.leftBound) this.applyLeftBoundForce()
-    if (!this.state.isDragging && this.nativePositionX > this.rightBound) this.applyRightBoundForce()
+    if (!this.state.isDragging && this.nativePositionX < this.leftBound) this.applyBoundForce(this.leftBound, 'left')
+    if (!this.state.isDragging && this.nativePositionX > this.rightBound) this.applyBoundForce(this.rightBound, 'right')
     this.nativePositionX += this.velocityX
 
-    const isInfinitesimal = this.roundNum(Math.abs(this.velocityX)) < 0.0001
+    const isInfinitesimal = this.roundNum(Math.abs(this.velocityX)) < 0.001
 
     if (!this.state.isDragging && isInfinitesimal) {
       // no longer dragging and inertia has stopped
@@ -66,30 +66,17 @@ export default class Dragger extends React.Component {
     }
   }
 
-  applyRightBoundForce = () => {
+  applyBoundForce = (bound, edge) => {
     // bouncing past bound
-    const distance = this.rightBound - this.nativePositionX
+    const distance = bound - this.nativePositionX
     let force = distance * this.settings.stiffness
     // calculate resting position with this force
     const rest = this.nativePositionX + (this.velocityX + force) / (1 - this.settings.friction)
     // apply force if resting position is out of bounds
-    if (rest > this.rightBound) {
+    if ((edge === 'right' && rest > bound) || (edge === 'left' && rest < bound)) {
       this.applyForce(force)
     } else {
       // if in bounds, apply force to align at bounds
-      force = distance * this.settings.stiffness - this.velocityX
-      this.applyForce(force)
-    }
-  }
-
-  applyLeftBoundForce = () => {
-    const distance = this.leftBound - this.nativePositionX
-    let force = distance * this.settings.stiffness
-    const rest = this.nativePositionX + (this.velocityX + force) / (1 - this.settings.friction)
-
-    if (rest < this.leftBound) {
-      this.applyForce(force)
-    } else {
       force = distance * this.settings.stiffness - this.velocityX
       this.applyForce(force)
     }
