@@ -46,10 +46,10 @@ export default class App extends Component {
           disabled={this.state.disabled}
           ResizeObserver={ResizeObserver}
           friction={0.9}
-          padding={0}
+          padding={-16}
           style={{
             // width: '300px',
-            height: '300px'
+            // height: '300px'
           }}
         >
           {this.state.items.map((item, i) => (

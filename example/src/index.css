@@ -22,11 +22,3 @@ body {
   border-radius: 16px;
   margin: 0 1rem;
 }
-
-.btn:first-child {
-  margin-left: 0;
-}
-
-.btn:last-child {
-  margin-right: 0;
-}
