@@ -36,11 +36,26 @@ export default class Dragger extends React.Component {
   }
 
   componentDidMount() {
-    const widthOuter = this.draggerRefOuter.current.offsetWidth
-    const widthInner = this.draggerRefInner.current.offsetWidth
+    const outerEl = this.draggerRefOuter.current
+    const innerEl = this.draggerRefInner.current
+    const widthOuter = outerEl.offsetWidth
+    const widthInner = innerEl.offsetWidth
 
     this.leftBound = -widthInner + widthOuter - this.settings.padding
-    this.rightBound = this.draggerRefOuter.current.clientLeft + this.settings.padding
+    this.rightBound = outerEl.clientLeft + this.settings.padding
+
+    // Update the edge boundaries when the outer element is resized
+    // Check first if ResizeObserver is available on the window or if a polyfill is supplied by the user via props
+    if (!window.ResizeObserver && !this.props.ResizeObserver) {
+      throw new Error('No ResizeObserver is available. Please check the docs for a guide on how to add a polyfill.')
+    }
+    const Ro = window.ResizeObserver || this.props.ResizeObserver
+    this.myObserver = new Ro(entries => {
+      const widthOuter = entries[0].contentRect.width
+      this.leftBound = -widthInner + widthOuter - this.settings.padding
+      this.rightBound = outerEl.clientLeft + this.settings.padding
+    })
+    this.myObserver.observe(outerEl)
   }
 
   roundNum = num => Math.round(num * 1000) / 1000
@@ -117,6 +132,7 @@ export default class Dragger extends React.Component {
   }
 
   onStart = (e) => {
+    if (this.props.disabled) return
     this.setState({ isDragging: true })
     // console.log('start')
     window.cancelAnimationFrame(this.rafId) // cancel any existing loop
@@ -145,13 +161,13 @@ export default class Dragger extends React.Component {
     console.log('render')
     return (
       <section
-        className={styles.timeline}
+        className={`${styles.timeline} ${this.state.isDragging ? styles.isDragging : ''} ${this.props.disabled ? styles.isDisabled : ''}`}
         onTouchStart={this.onStart}
         onMouseDown={this.onStart}
         ref={this.draggerRefOuter}
         style={{ 
           ...this.props.style,
-          cursor: this.state.isDragging ? 'grabbing' : 'grab'
+          // cursor: this.state.isDragging ? 'grabbing' : 'grab'
         }}
       >
         <div

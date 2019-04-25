@@ -3,6 +3,17 @@
   background-color: palegoldenrod;
   width: 100%;
   overflow: hidden;
+  cursor: grab;
+}
+
+.isDragging {
+  cursor: grabbing;
+}
+
+
+.isDisabled {
+  /* opacity: 0.5; */
+  cursor: default;
 }
 
 

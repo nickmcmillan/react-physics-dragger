@@ -1,13 +1,31 @@
 import React, { Component } from 'react'
-
+import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
 export default class App extends Component {
+
+  state = {
+    disabled: false,
+  }
+
+  handleDisable = () => {
+    this.setState(prevState => {
+      return {
+        disabled: !prevState.disabled
+      }
+    })
+  }
+
   render() {
     return (
       <div>
+        <button onClick={this.handleDisable}>
+          {this.state.disabled ? 'Dragger is disabled': 'Dragger is enabled'}
+        </button>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Labore perspiciatis, architecto velit amet ad a mollitia commodi nesciunt in consequuntur sit dolore iusto quas, aperiam repudiandae, non error laboriosam. Molestias!</p>
         <Dragger
+          disabled={this.state.disabled}
+          ResizeObserver={ResizeObserver}
           friction={0.92}
           stiffness={0.08}
           padding={0}

@@ -8,8 +8,9 @@
     "prop-types": "^15.6.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
+    "react-physics-dragger": "link:..",
     "react-scripts": "^1.1.4",
-    "react-physics-dragger": "link:.."
+    "resize-observer-polyfill": "^1.5.1"
   },
   "scripts": {
     "start": "react-scripts start",
