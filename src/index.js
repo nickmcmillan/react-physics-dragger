@@ -1,9 +1,6 @@
 import * as React from 'react'
 import styles from './styles.css'
 
-
-
-
 // function goToPosition(pos) {
 //   var distance = pos - positionX
 //   var force = distance * this.settings.stiffness
@@ -14,7 +11,7 @@ export default class Dragger extends React.Component {
 
   constructor(props) {
     super(props)
-    this.draggerRef = React.createRef()
+    this.draggerRefOuter = React.createRef()
     this.draggerRefInner = React.createRef()
 
     this.settings = {
@@ -39,12 +36,14 @@ export default class Dragger extends React.Component {
   }
 
   componentDidMount() {
-    const width = this.draggerRef.current.offsetWidth
+    const widthOuter = this.draggerRefOuter.current.offsetWidth
     const widthInner = this.draggerRefInner.current.offsetWidth
 
-    this.rightBound = this.draggerRef.current.clientLeft + this.settings.padding
-    this.leftBound = -widthInner + width - this.settings.padding
+    this.rightBound = this.draggerRefOuter.current.clientLeft + this.settings.padding
+    this.leftBound = -widthInner + widthOuter - this.settings.padding
   }
+
+  roundNum = num => Math.round(num * 1000) / 1000
 
   update = () => {
     this.velocityX *= this.settings.friction
@@ -54,15 +53,15 @@ export default class Dragger extends React.Component {
     if (!this.state.isDragging && this.nativePositionX > this.rightBound) this.applyRightBoundForce()
     this.nativePositionX += this.velocityX
 
-    const isInfinitesimal = Math.round(Math.abs(this.velocityX) * 1000) / 1000 < 0.0001
+    const isInfinitesimal = this.roundNum(Math.abs(this.velocityX)) < 0.0001
 
-    if (isInfinitesimal && !this.state.isDragging) {
-      // console.log('stop')
+    if (!this.state.isDragging && isInfinitesimal) {
+      // no longer dragging and inertia has stopped
       window.cancelAnimationFrame(this.rafId)
-      this.setState({ restPositionX: this.nativePositionX })
+      this.setState({ restPositionX: this.roundNum(this.nativePositionX) })
     } else {
       // bypass reacts render method
-      this.draggerRefInner.current.style.transform = `translate3d(${Math.round(this.nativePositionX * 1000) / 1000}px,0,0)`
+      this.draggerRefInner.current.style.transform = `translate3d(${this.roundNum(this.nativePositionX)}px,0,0)`
       this.rafId = window.requestAnimationFrame(this.update)
     }
   }
@@ -162,7 +161,7 @@ export default class Dragger extends React.Component {
         className={styles.timeline}
         onTouchStart={this.onStart}
         onMouseDown={this.onStart}
-        ref={this.draggerRef}
+        ref={this.draggerRefOuter}
         style={{ 
           ...this.props.style,
           cursor: this.state.isDragging ? 'grabbing' : 'grab'
