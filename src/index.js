@@ -3,7 +3,7 @@ import styles from './styles.css'
 
 // function goToPosition(pos) {
 //   var distance = pos - positionX
-//   var force = distance * this.settings.stiffness
+//   var force = distance * (1 - this.settings.friction)
 //   applyForce(force)
 // }
 
@@ -15,7 +15,6 @@ export default class Dragger extends React.Component {
     this.draggerRefInner = React.createRef()
 
     this.settings = {
-      stiffness: props.stiffness || 0.08,
       friction: props.friction || 0.92,
       padding: props.padding || 0,
     }
@@ -84,7 +83,7 @@ export default class Dragger extends React.Component {
   applyBoundForce = (bound, edge) => {
     // bouncing past bound
     const distance = bound - this.nativePositionX
-    let force = distance * this.settings.stiffness
+    let force = distance * (1 - this.settings.friction)
     // calculate resting position with this force
     const rest = this.nativePositionX + (this.velocityX + force) / (1 - this.settings.friction)
     // apply force if resting position is out of bounds
@@ -92,7 +91,7 @@ export default class Dragger extends React.Component {
       this.applyForce(force)
     } else {
       // if in bounds, apply force to align at bounds
-      force = distance * this.settings.stiffness - this.velocityX
+      force = distance * (1 - this.settings.friction) - this.velocityX
       this.applyForce(force)
     }
   }
@@ -165,10 +164,7 @@ export default class Dragger extends React.Component {
         onTouchStart={this.onStart}
         onMouseDown={this.onStart}
         ref={this.draggerRefOuter}
-        style={{ 
-          ...this.props.style,
-          // cursor: this.state.isDragging ? 'grabbing' : 'grab'
-        }}
+        style={{ ...this.props.style }}
       >
         <div
           ref={this.draggerRefInner}
