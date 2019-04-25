@@ -1,5 +1,32 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 body {
   margin: 0;
-  padding: 20px;
   font-family: sans-serif;
+}
+
+
+.btn {
+  padding: 2rem 10rem;
+  /* width: 100%; */
+  background-color: transparent;
+  outline: 0;
+  border: 0;
+  /* display: inline-block; */
+  border: 4px solid #333;
+  border-radius: 16px;
+  margin: 0 1rem;
+}
+
+.btn:first-child {
+  margin-left: 0;
+}
+
+.btn:last-child {
+  margin-right: 0;
 }

@@ -1,9 +1,18 @@
-.timeline {
+.outer {
   position: relative;
   background-color: palegoldenrod;
   width: 100%;
   overflow: hidden;
   cursor: grab;
+}
+
+.inner {
+  white-space: nowrap;
+  position: relative;
+  user-select: none;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+  display: inline-block;
 }
 
 .isDragging {
@@ -17,26 +26,6 @@
 }
 
 
-li {
-  display: inline-block;
-}
-
-button {
-  margin: 0 10rem;
-  background-color: pink;
-}
-
-
-.slider {
-  display: inline-block;
-  white-space: nowrap;
-  will-change: transform;
-  position: relative;
-  overflow: hidden;
-  user-select: none;
-  -webkit-overflow-scrolling: touch;
-  will-change: transform;
-}
 
 
 /* body.grabbing {

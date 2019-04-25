@@ -10,6 +10,7 @@
     "react-dom": "^16.4.1",
     "react-physics-dragger": "link:..",
     "react-scripts": "^1.1.4",
+    "reset-css": "^4.0.1",
     "resize-observer-polyfill": "^1.5.1"
   },
   "scripts": {

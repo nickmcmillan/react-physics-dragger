@@ -24,6 +24,9 @@ export default class Dragger extends React.Component {
       isDragging: false,
     }
 
+    this.leftBound = 0
+    this.rightBound = 0
+
     this.docStyle = document.documentElement.style
     this.inputType = ''
     this.velocityX = 0
@@ -32,16 +35,19 @@ export default class Dragger extends React.Component {
     this.dragPositionX = this.nativePositionX
     this.nativePositionX = this.settings.padding // starting position
     this.rafId = null
+
+    this.outerEl = null
+    this.innerEl = null
   }
 
   componentDidMount() {
-    const outerEl = this.draggerRefOuter.current
-    const innerEl = this.draggerRefInner.current
-    const widthOuter = outerEl.offsetWidth
-    const widthInner = innerEl.offsetWidth
+    this.outerEl = this.draggerRefOuter.current
+    this.innerEl = this.draggerRefInner.current
+    const widthOuter = this.outerEl.offsetWidth
+    const widthInner = this.innerEl.offsetWidth
 
     this.leftBound = -widthInner + widthOuter - this.settings.padding
-    this.rightBound = outerEl.clientLeft + this.settings.padding
+    this.rightBound = this.outerEl.clientLeft + this.settings.padding
 
     // Update the edge boundaries when the outer element is resized
     // Check first if ResizeObserver is available on the window or if a polyfill is supplied by the user via props
@@ -51,20 +57,47 @@ export default class Dragger extends React.Component {
     const Ro = window.ResizeObserver || this.props.ResizeObserver
     this.myObserver = new Ro(entries => {
       const widthOuter = entries[0].contentRect.width
-      this.leftBound = -widthInner + widthOuter - this.settings.padding
-      this.rightBound = outerEl.clientLeft + this.settings.padding
+      this.setBoundaries(widthInner, widthOuter)
+      // this.rafId = window.requestAnimationFrame(this.update)
     })
-    this.myObserver.observe(outerEl)
+    this.myObserver.observe(this.outerEl)
   }
+
+  componentDidUpdate(prevProps) {
+    const oldKeys = this.props.children.map(child => child.key)
+    const newKeys = prevProps.children.map(child => child.key)
+    const childrenChanged = this.areTwoArraysSame(oldKeys, newKeys)
+
+    if (!childrenChanged) {
+      const widthOuter = this.outerEl.offsetWidth
+      const widthInner = this.innerEl.offsetWidth
+      this.setBoundaries(widthInner, widthOuter)
+
+      this.rafId = window.requestAnimationFrame(this.update)
+    }
+  }
+
+  setBoundaries = () => {
+    const widthOuter = this.outerEl.offsetWidth
+    const widthInner = this.innerEl.offsetWidth
+    const innerIsLessThanOuter = widthInner < widthOuter
+    const leftEdge = this.outerEl.clientLeft + this.settings.padding
+    const rightEdge = -widthInner + widthOuter - this.settings.padding
+
+    this.leftBound = innerIsLessThanOuter ? leftEdge : rightEdge
+    this.rightBound = innerIsLessThanOuter ? rightEdge : leftEdge
+  }
+
+  areTwoArraysSame = (arr1, arr2) => arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index])
 
   roundNum = num => Math.round(num * 1000) / 1000
 
   update = () => {
     this.velocityX *= this.settings.friction
-    this.applyDragForce()
 
     if (!this.state.isDragging && this.nativePositionX < this.leftBound) this.applyBoundForce(this.leftBound, 'left')
     if (!this.state.isDragging && this.nativePositionX > this.rightBound) this.applyBoundForce(this.rightBound, 'right')
+    this.applyDragForce()
     this.nativePositionX += this.velocityX
 
     const isInfinitesimal = this.roundNum(Math.abs(this.velocityX)) < 0.001
@@ -133,7 +166,6 @@ export default class Dragger extends React.Component {
   onStart = (e) => {
     if (this.props.disabled) return
     this.setState({ isDragging: true })
-    // console.log('start')
     window.cancelAnimationFrame(this.rafId) // cancel any existing loop
     this.rafId = window.requestAnimationFrame(this.update) // kick off a new loop
 
@@ -157,10 +189,11 @@ export default class Dragger extends React.Component {
   }
 
   render() {
-    console.log('render')
+    // console.log('ren', this.leftBound, this.rightBound)
+    
     return (
-      <section
-        className={`${styles.timeline} ${this.state.isDragging ? styles.isDragging : ''} ${this.props.disabled ? styles.isDisabled : ''}`}
+      <div
+        className={`${styles.outer} ${this.state.isDragging ? styles.isDragging : ''} ${this.props.disabled ? styles.isDisabled : ''}`}
         onTouchStart={this.onStart}
         onMouseDown={this.onStart}
         ref={this.draggerRefOuter}
@@ -168,12 +201,12 @@ export default class Dragger extends React.Component {
       >
         <div
           ref={this.draggerRefInner}
-          className={styles.slider}
+          className={`${styles.inner} dragger-inner`}
           style={{ 'transform': `translateX(${this.state.restPositionX}px)` }}
         >
           {this.props.children}
         </div>
-      </section>
+      </div>
     )
   }
 }
