@@ -201,11 +201,9 @@ export default class Dragger extends React.Component {
   }
 
   render() {
-    // console.log('ren', this.leftBound, this.rightBound)
-    
     return (
       <div
-        className={`${styles.outer} ${this.state.isDragging ? styles.isDragging : ''} ${this.props.disabled ? styles.isDisabled : ''}`}
+        className={`${styles.outer} ${this.state.isDragging ? styles.isDragging : ''} ${this.props.disabled ? styles.isDisabled : ''} ${this.props.className}`}
         onTouchStart={this.onStart}
         onMouseDown={this.onStart}
         ref={this.draggerRefOuter}

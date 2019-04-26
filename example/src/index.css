@@ -1,6 +1,7 @@
 html {
   box-sizing: border-box;
 }
+
 *, *:before, *:after {
   box-sizing: inherit;
 }
@@ -10,20 +11,24 @@ body {
   font-family: sans-serif;
 }
 
+.container {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
 
 .btn {
-  
-  /* width: 100%; */
-  background-color: transparent;
+  background-color: #fff;
   outline: 0;
   border: 0;
   display: inline-block;
   padding: 0;
   border: 4px solid #333;
   border-radius: 16px;
-  /* margin: 0 1rem; */
+  margin: 0 1rem;
+  font-size: 1rem;
 }
 
 .inner {
-  padding: 2rem 10rem;
+  padding: 4rem 10rem;
 }

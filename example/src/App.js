@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
-import 'reset-css';
+import './index.css'
+import 'reset-css'
 
 export default class App extends Component {
 
@@ -17,7 +18,7 @@ export default class App extends Component {
 
   state = {
     disabled: false,
-    items: ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
+    items: ['Cabbage', 'Turnip', 'Radish',]// 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
   }
 
   handleDisable = () => {
@@ -35,21 +36,31 @@ export default class App extends Component {
   
   handleRemoveItem = () => {
     const items = [...this.state.items].splice(1, this.state.items.length)
-    this.inputRefs = []
     this.setState({ items })
   }
 
   handleOnMove = val => {
+    const parallaxFactor = 3
+
     this.inputRefs.forEach(ref => {
       if (!ref) return
-      const x = val.x + ref.offsetLeft
-      ref.style.transform = `translateX(${ x / 8}px)`
+      // const x = val.x + ref.offsetLeft // left aligned
+      const x = val.x + ref.offsetLeft - (val.outerWidth / parallaxFactor) // center aligned
+      ref.style.transform = `translateX(${x / (parallaxFactor * 2) }px)`
     })
   }
 
+  componentDidMount () {
+    this.handleOnMove({})
+  }
+  
+
   render() {
     return (
-      <div>
+      <div className="container">
+
+        <h1>React Physics Dragger</h1>
+
         <button onClick={this.handleDisable}>
           {this.state.disabled ? 'Dragger is disabled': 'Dragger is enabled'}
         </button>
@@ -64,8 +75,9 @@ export default class App extends Component {
           disabled={this.state.disabled}
           ResizeObserver={ResizeObserver}
           friction={0.9}
-          // padding={-16}
+          padding={-16}
           onMove={this.handleOnMove}
+          className="dragger"
           style={{
             // width: '300px',
             // height: '300px'

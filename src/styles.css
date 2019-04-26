@@ -1,8 +1,12 @@
 .outer {
   position: relative;
   background-color: palegoldenrod;
-  width: 100%;
-  overflow: hidden;
+  /* width: 100%; */
+  /* overflow: hidden; */
+  /* cursor: grab; */
+}
+
+.outer * {
   cursor: grab;
 }
 
@@ -15,7 +19,7 @@
   display: inline-block;
 }
 
-.isDragging {
+.isDragging * {
   cursor: grabbing;
 }
 
@@ -24,11 +28,3 @@
   /* opacity: 0.5; */
   cursor: default;
 }
-
-
-
-
-/* body.grabbing {
-  cursor: -webkit-grabbing !important;
-  cursor: grabbing !important;
-} */
