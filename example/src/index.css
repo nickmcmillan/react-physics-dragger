@@ -12,13 +12,18 @@ body {
 
 
 .btn {
-  padding: 2rem 10rem;
+  
   /* width: 100%; */
   background-color: transparent;
   outline: 0;
   border: 0;
-  /* display: inline-block; */
+  display: inline-block;
+  padding: 0;
   border: 4px solid #333;
   border-radius: 16px;
-  margin: 0 1rem;
+  /* margin: 0 1rem; */
+}
+
+.inner {
+  padding: 2rem 10rem;
 }

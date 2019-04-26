@@ -6,9 +6,18 @@ import 'reset-css';
 
 export default class App extends Component {
 
+  constructor (props) {
+    super(props)
+    this.inputRefs = []
+  }
+
+  setRef = (ref) => {
+    this.inputRefs.push(ref)
+  }
+
   state = {
     disabled: false,
-    items: ['Cabbage', 'Turnip', 'Radish', 'Carrot']
+    items: ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
   }
 
   handleDisable = () => {
@@ -26,7 +35,16 @@ export default class App extends Component {
   
   handleRemoveItem = () => {
     const items = [...this.state.items].splice(1, this.state.items.length)
+    this.inputRefs = []
     this.setState({ items })
+  }
+
+  handleOnMove = val => {
+    this.inputRefs.forEach(ref => {
+      if (!ref) return
+      const x = val.x + ref.offsetLeft
+      ref.style.transform = `translateX(${ x / 8}px)`
+    })
   }
 
   render() {
@@ -46,17 +64,27 @@ export default class App extends Component {
           disabled={this.state.disabled}
           ResizeObserver={ResizeObserver}
           friction={0.9}
-          padding={-16}
-          onMove={val => {
-            console.log(val)
-          }}
+          // padding={-16}
+          onMove={this.handleOnMove}
           style={{
             // width: '300px',
             // height: '300px'
           }}
         >
           {this.state.items.map((item, i) => (
-            <button className="btn" key={`${item}-${i}`}>{item}</button>
+            <button
+              className="btn" key={`${item}-${i}`}
+            >
+              <div
+                className="inner"
+                style={{
+                  border: '1px solid pink',
+                }}
+                ref={this.setRef} 
+              >
+                {item}
+              </div>
+            </button>
           ))}
         </Dragger>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure omnis atque delectus ea laborum vel, dolorum accusantium. Similique esse ab repellendus impedit quae debitis odit in, totam soluta facere at. </p>

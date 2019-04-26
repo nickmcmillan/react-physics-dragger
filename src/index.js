@@ -38,18 +38,18 @@ export default class Dragger extends React.Component {
 
     this.outerEl = null
     this.innerEl = null
-    this.widthOuter = 0
-    this.widthInner = 0
+    this.outerWidth = 0
+    this.innerWidth = 0
 
   }
 
   componentDidMount() {
     this.outerEl = this.draggerRefOuter.current
     this.innerEl = this.draggerRefInner.current
-    this.widthOuter = this.outerEl.offsetWidth
-    this.widthInner = this.innerEl.offsetWidth
+    this.outerWidth = this.outerEl.offsetWidth
+    this.innerWidth = this.innerEl.offsetWidth
 
-    this.leftBound = -this.widthInner + this.widthOuter - this.settings.padding
+    this.leftBound = -this.innerWidth + this.outerWidth - this.settings.padding
     this.rightBound = this.outerEl.clientLeft + this.settings.padding
 
     // Update the edge boundaries when the outer element is resized
@@ -59,8 +59,8 @@ export default class Dragger extends React.Component {
     }
     const Ro = window.ResizeObserver || this.props.ResizeObserver
     this.myObserver = new Ro(entries => {
-      this.widthOuter = entries[0].contentRect.width
-      this.setBoundaries(this.widthInner, this.widthOuter)
+      this.outerWidth = entries[0].contentRect.width
+      this.setBoundaries(this.innerWidth, this.outerWidth)
       // this.rafId = window.requestAnimationFrame(this.update)
     })
     this.myObserver.observe(this.outerEl)
@@ -72,20 +72,20 @@ export default class Dragger extends React.Component {
     const childrenChanged = this.areTwoArraysSame(oldKeys, newKeys)
 
     if (!childrenChanged) {
-      this.widthOuter = this.outerEl.offsetWidth
-      this.widthInner = this.innerEl.offsetWidth
-      this.setBoundaries(this.widthInner, this.widthOuter)
+      this.outerWidth = this.outerEl.offsetWidth
+      this.innerWidth = this.innerEl.offsetWidth
+      this.setBoundaries(this.innerWidth, this.outerWidth)
 
       this.rafId = window.requestAnimationFrame(this.update)
     }
   }
 
   setBoundaries = () => {
-    this.widthOuter = this.outerEl.offsetWidth
-    this.widthInner = this.innerEl.offsetWidth
-    const innerIsLessThanOuter = this.widthInner < this.widthOuter
+    this.outerWidth = this.outerEl.offsetWidth
+    this.innerWidth = this.innerEl.offsetWidth
+    const innerIsLessThanOuter = this.innerWidth < this.outerWidth
     const leftEdge = this.outerEl.clientLeft + this.settings.padding
-    const rightEdge = -this.widthInner + this.widthOuter - this.settings.padding
+    const rightEdge = -this.innerWidth + this.outerWidth - this.settings.padding
 
     this.leftBound = innerIsLessThanOuter ? leftEdge : rightEdge
     this.rightBound = innerIsLessThanOuter ? rightEdge : leftEdge
@@ -117,9 +117,10 @@ export default class Dragger extends React.Component {
 
     if (this.props.onMove) {
       this.props.onMove({
-        translate: this.roundNum(this.nativePosition),
-        width: this.widthOuter,
-        progress: this.roundNum((this.nativePosition) / (this.widthOuter - this.widthInner - this.settings.padding)),
+        x: this.roundNum(this.nativePosition),
+        outerWidth: this.outerWidth,
+        innerWidth: this.innerWidth,
+        progress: this.roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth - this.settings.padding)),
       })
     }
   }
