@@ -17,7 +17,8 @@ export default class App extends Component {
 
   state = {
     disabled: false,
-    items: ['Cabbage', 'Turnip', 'Radish',]// 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
+    parallax: 'none',
+    items: ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
   }
 
   handleDisable = () => {
@@ -39,21 +40,36 @@ export default class App extends Component {
   }
 
   handleOnMove = val => {
+    if (this.state.parallax === 'none') return
     const parallaxFactor = 3
 
     this.inputRefs.forEach(ref => {
       if (!ref) return
-      // const x = val.x + ref.offsetLeft // left aligned
-      const x = val.x + ref.offsetLeft - (val.outerWidth / parallaxFactor) // center aligned
+      let x 
+      if (this.state.parallax === 'left') {
+        x = val.x + ref.offsetLeft
+      }
+      if (this.state.parallax === 'center') {
+        x = val.x + ref.offsetLeft - (val.outerWidth / parallaxFactor)
+      }
       ref.style.transform = `translateX(${x / (parallaxFactor * 2) }px)`
     })
+  }
+
+  handleSelectChange = (e) => {
+    console.log(e.target.value)
+    this.setState({
+      parallax: e.target.value
+    })
+    
+
   }
 
   render() {
     return (
       <div className="container">
 
-        <h1>React Physics Dragger</h1>
+        {/* <h1>React Physics Dragger</h1> */}
 
         <button onClick={this.handleDisable}>
           {this.state.disabled ? 'Dragger is disabled': 'Dragger is enabled'}
@@ -64,6 +80,12 @@ export default class App extends Component {
         <button onClick={this.handleRemoveItem}>
           Remove item
         </button>
+        <select name="parallax" id="parallax" onChange={this.handleSelectChange}>
+          <option value="none">none</option>
+          <option value="left">left</option>
+          <option value="center">center</option>
+          <option value="right">right</option>
+        </select>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Labore perspiciatis, architecto velit amet ad a mollitia commodi nesciunt in consequuntur sit dolore iusto quas, aperiam repudiandae, non error laboriosam. Molestias!</p>
         <Dragger
           disabled={this.state.disabled}
