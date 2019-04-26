@@ -47,6 +47,9 @@ export default class App extends Component {
           ResizeObserver={ResizeObserver}
           friction={0.9}
           padding={-16}
+          onMove={val => {
+            console.log(val)
+          }}
           style={{
             // width: '300px',
             // height: '300px'

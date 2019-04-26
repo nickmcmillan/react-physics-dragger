@@ -31,22 +31,25 @@ export default class Dragger extends React.Component {
     this.inputType = ''
     this.velocityX = 0
     this.downX = 0
-    this.dragStartPositionX = 0
-    this.dragPositionX = this.nativePositionX
-    this.nativePositionX = this.settings.padding // starting position
+    this.dragStartPosition = 0
+    this.dragPosition = this.nativePosition
+    this.nativePosition = this.settings.padding // starting position
     this.rafId = null
 
     this.outerEl = null
     this.innerEl = null
+    this.widthOuter = 0
+    this.widthInner = 0
+
   }
 
   componentDidMount() {
     this.outerEl = this.draggerRefOuter.current
     this.innerEl = this.draggerRefInner.current
-    const widthOuter = this.outerEl.offsetWidth
-    const widthInner = this.innerEl.offsetWidth
+    this.widthOuter = this.outerEl.offsetWidth
+    this.widthInner = this.innerEl.offsetWidth
 
-    this.leftBound = -widthInner + widthOuter - this.settings.padding
+    this.leftBound = -this.widthInner + this.widthOuter - this.settings.padding
     this.rightBound = this.outerEl.clientLeft + this.settings.padding
 
     // Update the edge boundaries when the outer element is resized
@@ -56,8 +59,8 @@ export default class Dragger extends React.Component {
     }
     const Ro = window.ResizeObserver || this.props.ResizeObserver
     this.myObserver = new Ro(entries => {
-      const widthOuter = entries[0].contentRect.width
-      this.setBoundaries(widthInner, widthOuter)
+      this.widthOuter = entries[0].contentRect.width
+      this.setBoundaries(this.widthInner, this.widthOuter)
       // this.rafId = window.requestAnimationFrame(this.update)
     })
     this.myObserver.observe(this.outerEl)
@@ -69,20 +72,20 @@ export default class Dragger extends React.Component {
     const childrenChanged = this.areTwoArraysSame(oldKeys, newKeys)
 
     if (!childrenChanged) {
-      const widthOuter = this.outerEl.offsetWidth
-      const widthInner = this.innerEl.offsetWidth
-      this.setBoundaries(widthInner, widthOuter)
+      this.widthOuter = this.outerEl.offsetWidth
+      this.widthInner = this.innerEl.offsetWidth
+      this.setBoundaries(this.widthInner, this.widthOuter)
 
       this.rafId = window.requestAnimationFrame(this.update)
     }
   }
 
   setBoundaries = () => {
-    const widthOuter = this.outerEl.offsetWidth
-    const widthInner = this.innerEl.offsetWidth
-    const innerIsLessThanOuter = widthInner < widthOuter
+    this.widthOuter = this.outerEl.offsetWidth
+    this.widthInner = this.innerEl.offsetWidth
+    const innerIsLessThanOuter = this.widthInner < this.widthOuter
     const leftEdge = this.outerEl.clientLeft + this.settings.padding
-    const rightEdge = -widthInner + widthOuter - this.settings.padding
+    const rightEdge = -this.widthInner + this.widthOuter - this.settings.padding
 
     this.leftBound = innerIsLessThanOuter ? leftEdge : rightEdge
     this.rightBound = innerIsLessThanOuter ? rightEdge : leftEdge
@@ -95,30 +98,38 @@ export default class Dragger extends React.Component {
   update = () => {
     this.velocityX *= this.settings.friction
 
-    if (!this.state.isDragging && this.nativePositionX < this.leftBound) this.applyBoundForce(this.leftBound, 'left')
-    if (!this.state.isDragging && this.nativePositionX > this.rightBound) this.applyBoundForce(this.rightBound, 'right')
+    if (!this.state.isDragging && this.nativePosition < this.leftBound) this.applyBoundForce(this.leftBound, 'left')
+    if (!this.state.isDragging && this.nativePosition > this.rightBound) this.applyBoundForce(this.rightBound, 'right')
     this.applyDragForce()
-    this.nativePositionX += this.velocityX
+    this.nativePosition += this.velocityX
 
     const isInfinitesimal = this.roundNum(Math.abs(this.velocityX)) < 0.001
 
     if (!this.state.isDragging && isInfinitesimal) {
       // no longer dragging and inertia has stopped
       window.cancelAnimationFrame(this.rafId)
-      this.setState({ restPositionX: this.roundNum(this.nativePositionX) })
+      this.setState({ restPositionX: this.roundNum(this.nativePosition) })
     } else {
       // bypass reacts render method
-      this.draggerRefInner.current.style.transform = `translate3d(${this.roundNum(this.nativePositionX)}px,0,0)`
+      this.draggerRefInner.current.style.transform = `translate3d(${this.roundNum(this.nativePosition)}px,0,0)`
       this.rafId = window.requestAnimationFrame(this.update)
+    }
+
+    if (this.props.onMove) {
+      this.props.onMove({
+        translate: this.roundNum(this.nativePosition),
+        width: this.widthOuter,
+        progress: this.roundNum((this.nativePosition) / (this.widthOuter - this.widthInner - this.settings.padding)),
+      })
     }
   }
 
   applyBoundForce = (bound, edge) => {
     // bouncing past bound
-    const distance = bound - this.nativePositionX
+    const distance = bound - this.nativePosition
     let force = distance * (1 - this.settings.friction)
     // calculate resting position with this force
-    const rest = this.nativePositionX + (this.velocityX + force) / (1 - this.settings.friction)
+    const rest = this.nativePosition + (this.velocityX + force) / (1 - this.settings.friction)
     // apply force if resting position is out of bounds
     if ((edge === 'right' && rest > bound) || (edge === 'left' && rest < bound)) {
       this.applyForce(force)
@@ -132,7 +143,7 @@ export default class Dragger extends React.Component {
   applyDragForce = () => {
     if (!this.state.isDragging) return
 
-    const dragVelocity = this.dragPositionX - this.nativePositionX
+    const dragVelocity = this.dragPosition - this.nativePosition
     const dragForce = dragVelocity - this.velocityX
     this.velocityX += dragForce
   }
@@ -143,8 +154,8 @@ export default class Dragger extends React.Component {
 
   onMove = (e) => {
     const x = this.inputType === 'mouse' ? e.pageX : e.touches[0].pageX
-    const moveX = x - this.downX
-    this.dragPositionX = this.dragStartPositionX + moveX
+    const move = x - this.downX
+    this.dragPosition = this.dragStartPosition + move
   }
 
   onRelease = () => {
@@ -175,7 +186,7 @@ export default class Dragger extends React.Component {
     this.docStyle.cursor = 'grabbing'
     this.docStyle.userSelect = 'none'
     this.downX = this.inputType === 'mouse' ? e.pageX : e.touches[0].pageX
-    this.dragStartPositionX = this.nativePositionX
+    this.dragStartPosition = this.nativePosition
 
     this.onMove(e)
 
