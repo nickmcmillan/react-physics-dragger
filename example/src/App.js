@@ -3,7 +3,6 @@ import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
 import './index.css'
-import 'reset-css'
 
 export default class App extends Component {
 
