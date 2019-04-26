@@ -64,6 +64,15 @@ export default class Dragger extends React.Component {
       // this.rafId = window.requestAnimationFrame(this.update)
     })
     this.myObserver.observe(this.outerEl)
+
+    if (this.props.onLoaded) {
+      this.props.onLoaded({
+        x: this.roundNum(this.nativePosition),
+        outerWidth: this.outerWidth,
+        innerWidth: this.innerWidth,
+        progress: this.roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth - this.settings.padding)),
+      })
+    }
   }
 
   componentDidUpdate(prevProps) {

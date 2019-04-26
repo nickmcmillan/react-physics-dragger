@@ -50,11 +50,6 @@ export default class App extends Component {
     })
   }
 
-  componentDidMount () {
-    this.handleOnMove({})
-  }
-  
-
   render() {
     return (
       <div className="container">
@@ -77,16 +72,11 @@ export default class App extends Component {
           friction={0.9}
           padding={-16}
           onMove={this.handleOnMove}
+          onLoaded={this.handleOnMove}
           className="dragger"
-          style={{
-            // width: '300px',
-            // height: '300px'
-          }}
         >
           {this.state.items.map((item, i) => (
-            <button
-              className="btn" key={`${item}-${i}`}
-            >
+            <button className="btn" key={`${item}-${i}`}>
               <div
                 className="inner"
                 style={{
