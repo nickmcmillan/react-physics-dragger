@@ -65,8 +65,8 @@ export default class Dragger extends React.Component {
     })
     this.myObserver.observe(this.outerEl)
 
-    if (this.props.onLoaded) {
-      this.props.onLoaded({
+    if (this.props.onMove) {
+      this.props.onMove({
         x: this.roundNum(this.nativePosition),
         outerWidth: this.outerWidth,
         innerWidth: this.innerWidth,

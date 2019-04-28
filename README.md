@@ -1,30 +1,59 @@
-# react-physics-dragger
+# react physics dragger
 
-> 
+> Simple, no-frills horizontal dragger/slider
 
-[![NPM](https://img.shields.io/npm/v/react-physics-dragger.svg)](https://www.npmjs.com/package/react-physics-dragger) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[View Demo]()
 
-## Install
+[![NPM](https://img.shields.io/npm/v/react-physics-dragger.svg?style=flat-square)](https://www.npmjs.com/package/react-physics-dragger)
+![npm bundle size](https://img.shields.io/bundlephobia/min/react-physics-dragger.svg?style=flat-square)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg?style=flat-square)](https://standardjs.com)
 
-```bash
-npm install --save react-physics-dragger
+Basically a wrapper element which adds horizontal dragging capabilities. It uses basic physics which apply friction and also bouncing past boundaries (similar to whats used by Apple).
+
+Works with both touch and mouse.
+
+
+# Example usage of Pig
+
+```
+yarn add react-physics-dragger
+# or
+npm i react-physics-dragger
 ```
 
-## Usage
+This uses [ResizeObserver](https://caniuse.com/#search=resizeobserver). You might need to add a polyfill. If so, instructions below.
 
-```jsx
-import React, { Component } from 'react'
+```
+import Dragger from 'react-physics-dragger'
+import ResizeObserver from 'resize-observer-polyfill' // If you need a ResizeObserver polyfill, this one works great.
 
-import MyComponent from 'react-physics-dragger'
-
-class Example extends Component {
-  render () {
+class App extends Component {
+  render() {
     return (
-      <MyComponent />
+      <Dragger
+          disabled={false} // Optional. Default is false
+          ResizeObserver={ResizeObserver} // If you need the polyfill, pass it in here. Simples. 
+          friction={0.9} // Optional. Default is 0.9
+          padding={0} // Optional. This is the boundary padding on the left and right. Default is 0
+          onMove={this.handleOnMove} // Optional. This is a callback function, fired on every movement. Also fired on initial mount.
+          className="dragger" // Pass in whatever classnames or styles you'd like. This will accept and spread all props.
+        >
+          <div>1</div>
+          <div>2</div>
+          <div>3</div>
+        </Dragger>
     )
   }
 }
+
+export default App
 ```
+
+
+## Todo: 
+- [ ] Maybe convert it to hooks
+
+This React library was packaged with https://github.com/transitive-bullshit/create-react-library
 
 ## License
 

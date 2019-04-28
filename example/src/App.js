@@ -11,7 +11,7 @@ export default class App extends Component {
     this.state = {
       disabled: false,
       parallax: 'none',
-      padding: -16,
+      padding: 0,
       friction: 0.9,
       items: ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
     }
@@ -105,7 +105,6 @@ export default class App extends Component {
           friction={this.state.friction}
           padding={this.state.padding}
           onMove={this.handleOnMove}
-          onLoaded={this.handleOnMove}
           className="dragger"
         >
           {this.state.items.map((item, i) => (
