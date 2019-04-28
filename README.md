@@ -13,7 +13,7 @@ Basically a wrapper element which adds horizontal dragging capabilities. It uses
 Works with both touch and mouse.
 
 
-# Example usage of Pig
+## Example usage
 
 ```
 yarn add react-physics-dragger
