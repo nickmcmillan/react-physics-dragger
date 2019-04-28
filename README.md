@@ -2,7 +2,7 @@
 
 > Simple, no-frills horizontal dragger/slider
 
-[View Demo]()
+[View Demo](https://codesandbox.io/s/54452vm5kp)
 
 [![NPM](https://img.shields.io/npm/v/react-physics-dragger.svg?style=flat-square)](https://www.npmjs.com/package/react-physics-dragger)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/react-physics-dragger.svg?style=flat-square)
