@@ -2,32 +2,26 @@ import React, { Component } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
-import './index.css'
-
 export default class App extends Component {
 
   constructor (props) {
     super(props)
     this.inputRefs = []
+
+    this.state = {
+      disabled: false,
+      parallax: 'none',
+      padding: -16,
+      friction: 0.9,
+      items: ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
+    }
   }
 
-  setRef = (ref) => {
+  setRef = ref => {
     this.inputRefs.push(ref)
   }
 
-  state = {
-    disabled: false,
-    parallax: 'none',
-    items: ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
-  }
-
-  handleDisable = () => {
-    this.setState(prevState => {
-      return {
-        disabled: !prevState.disabled
-      }
-    })
-  }
+  handleDisable = () => this.setState(prevState => ({ disabled: !prevState.disabled }))
 
   handleAddItem = () => {
     const items = [...this.state.items, 'Tomato']
@@ -56,58 +50,68 @@ export default class App extends Component {
     })
   }
 
-  handleSelectChange = (e) => {
-    console.log(e.target.value)
+  handlePaddingChange = e => {
+    this.setState({
+      padding: parseInt(e.target.value, 10) || 0
+    })
+  }
+  
+  handleFrictionChange = e => {
+    this.setState({
+      friction: e.target.value
+    })
+  }
+
+  handleSelectChange = e => {
     this.setState({
       parallax: e.target.value
     })
-    
-
   }
 
   render() {
     return (
       <div className="container">
 
-        {/* <h1>React Physics Dragger</h1> */}
+        <h1>React Physics Dragger</h1>
 
-        <button onClick={this.handleDisable}>
-          {this.state.disabled ? 'Dragger is disabled': 'Dragger is enabled'}
-        </button>
-        <button onClick={this.handleAddItem}>
-          Add item
-        </button>
-        <button onClick={this.handleRemoveItem}>
-          Remove item
-        </button>
-        <select name="parallax" id="parallax" onChange={this.handleSelectChange}>
-          <option value="none">none</option>
-          <option value="left">left</option>
-          <option value="center">center</option>
-          <option value="right">right</option>
-        </select>
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Labore perspiciatis, architecto velit amet ad a mollitia commodi nesciunt in consequuntur sit dolore iusto quas, aperiam repudiandae, non error laboriosam. Molestias!</p>
+        <div className="button-group">
+          <button className="btn" onClick={this.handleDisable}>
+            {this.state.disabled ? 'Dragger is disabled': 'Dragger is enabled'}
+          </button>
+          <button className="btn" onClick={this.handleAddItem}>
+            Add item
+          </button>
+          <button className="btn" onClick={this.handleRemoveItem}>
+            Remove item
+          </button>
+        </div>
+        <div className="button-group">
+          <label htmlFor="parallax">Parallax origin: </label>
+          <select name="parallax" id="parallax" onChange={this.handleSelectChange}>
+            <option value="none">none</option>
+            <option value="left">left</option>
+            <option value="center">center</option>
+            <option value="right">right</option>
+          </select>
+          <label htmlFor="padding">Padding (px): </label>
+          <input type="number" onChange={this.handlePaddingChange} value={this.state.padding} />
+          <label htmlFor="padding">Friction <span className="sub">(between 0.85 and 0.95 works best)</span>: </label>
+          <input type="number" onChange={this.handleFrictionChange} value={this.state.friction} min="0.8" max="0.99" />
+        </div>
+
         <Dragger
           disabled={this.state.disabled}
           ResizeObserver={ResizeObserver}
-          friction={0.9}
-          padding={-16}
+          friction={this.state.friction}
+          padding={this.state.padding}
           onMove={this.handleOnMove}
           onLoaded={this.handleOnMove}
           className="dragger"
         >
           {this.state.items.map((item, i) => (
-            <button className="btn" key={`${item}-${i}`}>
-              <div
-                className="inner"
-                style={{
-                  border: '1px solid pink',
-                }}
-                ref={this.setRef} 
-              >
-                {item}
-              </div>
-            </button>
+            <article className="item" key={`${item}-${i}`}>
+              <div className="inner" ref={this.setRef}>{item}</div>
+            </article>
           ))}
         </Dragger>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure omnis atque delectus ea laborum vel, dolorum accusantium. Similique esse ab repellendus impedit quae debitis odit in, totam soluta facere at. </p>

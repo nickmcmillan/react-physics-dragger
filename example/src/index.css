@@ -11,7 +11,11 @@ body {
   font-family: sans-serif;
 }
 
-button {
+.root {
+  overflow-x: hidden;
+}
+
+/* button {
   border: none;
   margin: 0;
   padding: 0;
@@ -24,6 +28,39 @@ button {
   -webkit-font-smoothing: inherit;
   -moz-osx-font-smoothing: inherit;
   -webkit-appearance: none;
+} */
+
+input {
+  max-width: 5rem;
+}
+
+input,
+button,
+select {
+  font: inherit;
+  font-size: 1rem;
+  line-height: normal;
+  margin: 0;
+  padding: 1rem;
+  width: auto;
+  overflow: visible;
+  background: transparent;
+  -webkit-font-smoothing: inherit;
+  -moz-osx-font-smoothing: inherit;
+  -webkit-appearance: none;
+  margin-right: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.sub {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+.button-group {
+  margin-bottom: 1.5rem;
 }
 
 .container {
@@ -35,9 +72,12 @@ button {
 .dragger {
   margin-top: 3rem;
   margin-bottom: 3rem;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  background-color: #aac4ee;
 }
 
-.btn {
+.item {
   background-color: #fff;
   outline: 0;
   border: 0;

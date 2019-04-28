@@ -1,12 +1,12 @@
 .outer {
   position: relative;
-  background-color: palegoldenrod;
+  /* background-color: palegoldenrod; */
   /* width: 100%; */
   /* overflow: hidden; */
   /* cursor: grab; */
 }
 
-.outer * {
+.outer {
   cursor: grab;
 }
 

@@ -76,6 +76,21 @@ export default class Dragger extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+
+    if (this.settings.friction !== this.props.friction) {
+      this.settings.friction = this.props.friction
+
+    }
+
+    if (this.settings.padding !== this.props.padding) {
+      this.settings.padding = this.props.padding
+      this.outerWidth = this.outerEl.offsetWidth
+      this.innerWidth = this.innerEl.offsetWidth
+      this.setBoundaries(this.innerWidth, this.outerWidth)
+
+      this.rafId = window.requestAnimationFrame(this.update)
+      
+    }
     const oldKeys = this.props.children.map(child => child.key)
     const newKeys = prevProps.children.map(child => child.key)
     const childrenChanged = this.areTwoArraysSame(oldKeys, newKeys)
