@@ -2,13 +2,13 @@
 
 > Simple, no-frills horizontal dragger/slider
 
-[View Demo](https://codesandbox.io/s/54452vm5kp)
+[View on Codesandbox](https://codesandbox.io/s/54452vm5kp)
 
 [![NPM](https://img.shields.io/npm/v/react-physics-dragger.svg?style=flat-square)](https://www.npmjs.com/package/react-physics-dragger)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/react-physics-dragger.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg?style=flat-square)](https://standardjs.com)
 
-Basically a wrapper element which adds horizontal dragging capabilities. It uses basic physics which apply friction and also bouncing past boundaries (similar to whats used by Apple).
+Basically creates a wrapper element with horizontal dragging capabilities. It uses basic physics which apply friction and also bouncing past boundaries (similar to Apple).
 
 Works with both touch and mouse.
 
@@ -51,9 +51,11 @@ export default App
 
 
 ## Todo: 
-- [ ] Maybe convert it to hooks
+- [ ] Maybe convert it to hooks, less imperative, more functional
+- [ ] Could it work with sideways scrolling?
+- [ ] Scroll to x position API
 
-This React library was packaged with https://github.com/transitive-bullshit/create-react-library
+This library was packaged with https://github.com/transitive-bullshit/create-react-library
 
 ## License
 
