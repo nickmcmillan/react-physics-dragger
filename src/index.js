@@ -88,8 +88,8 @@ export default class Dragger extends React.Component {
       this.setBoundaries(this.innerWidth, this.outerWidth)
 
       this.rafId = window.requestAnimationFrame(this.update)
-      
     }
+
     const oldKeys = this.props.children.map(child => child.key)
     const newKeys = prevProps.children.map(child => child.key)
     const childrenChanged = this.areTwoArraysSame(oldKeys, newKeys)
@@ -182,8 +182,14 @@ export default class Dragger extends React.Component {
     this.dragPosition = this.dragStartPosition + move
   }
 
-  onRelease = () => {
+  onRelease = (e) => {
     this.setState({ isDragging: false })
+
+    // onRelease if the slider hasn't dragged sufficiently, classify it as a static click
+    const moveVector = Math.abs(this.downX - e.pageX)
+    if (moveVector < 20 && this.props.onStaticClick) {
+      this.props.onStaticClick(e.target)
+    }
 
     // Update html element styles
     this.docStyle.cursor = ''
@@ -200,6 +206,7 @@ export default class Dragger extends React.Component {
 
   onStart = (e) => {
     if (this.props.disabled) return
+
     this.setState({ isDragging: true })
     window.cancelAnimationFrame(this.rafId) // cancel any existing loop
     this.rafId = window.requestAnimationFrame(this.update) // kick off a new loop

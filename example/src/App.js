@@ -68,6 +68,10 @@ export default class App extends Component {
     })
   }
 
+  handleStaticClick = e => {
+    console.log('static click', e)
+  }
+
   render() {
     return (
       <div className="container">
@@ -105,12 +109,13 @@ export default class App extends Component {
           friction={this.state.friction}
           padding={this.state.padding}
           onMove={this.handleOnMove}
+          onStaticClick={this.handleStaticClick}
           className="dragger"
         >
           {this.state.items.map((item, i) => (
-            <article className="item" key={`${item}-${i}`}>
+            <button className="item" key={`${item}-${i}`}>
               <div className="inner" ref={this.setRef}>{item}</div>
-            </article>
+            </button>
           ))}
         </Dragger>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure omnis atque delectus ea laborum vel, dolorum accusantium. Similique esse ab repellendus impedit quae debitis odit in, totam soluta facere at. </p>
