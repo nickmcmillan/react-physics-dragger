@@ -207,6 +207,11 @@ export default class Dragger extends React.Component {
   onStart = (e) => {
     if (this.props.disabled) return
 
+    // dismiss clicks from right or middle buttons
+    // (credit: https://github.com/metafizzy/flickity/blob/e2706840532c0ce9c4fc25832e810ad4f9823b61/dist/flickity.pkgd.js#L2176)
+    const mouseButton = e.button
+    if (mouseButton && (mouseButton !== 0 && mouseButton !== 1)) return
+
     this.setState({ isDragging: true })
     window.cancelAnimationFrame(this.rafId) // cancel any existing loop
     this.rafId = window.requestAnimationFrame(this.update) // kick off a new loop
