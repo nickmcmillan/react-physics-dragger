@@ -6,6 +6,7 @@ html {
   box-sizing: inherit;
 }
 
+
 body {
   margin: 0;
   font-family: sans-serif;
@@ -15,20 +16,10 @@ body {
   overflow-x: hidden;
 }
 
-/* button {
-  border: none;
-  margin: 0;
-  padding: 0;
-  width: auto;
-  overflow: visible;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  line-height: normal;
-  -webkit-font-smoothing: inherit;
-  -moz-osx-font-smoothing: inherit;
-  -webkit-appearance: none;
-} */
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+}
 
 input {
   max-width: 5rem;
@@ -84,11 +75,16 @@ select {
   display: inline-block;
   padding: 0;
   border: 4px solid #333;
-  border-radius: 16px;
-  margin: 0 1rem;
+  border-radius: 20px;
+  /* margin: 0 1rem; */
+  margin-right: 1rem;
   font-size: 1rem;
 }
 
+.item:last-child {
+  margin-right: 0;
+}
+
 .inner {
-  padding: 4rem 10rem;
+  padding: 2rem 5rem;
 }

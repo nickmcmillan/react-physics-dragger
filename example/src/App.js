@@ -24,12 +24,14 @@ export default class App extends Component {
   handleDisable = () => this.setState(prevState => ({ disabled: !prevState.disabled }))
 
   handleAddItem = () => {
+    // Add a tomato to the end of the items list
     const items = [...this.state.items, 'Tomato']
     this.setState({ items })
   }
   
   handleRemoveItem = () => {
-    const items = [...this.state.items].splice(1, this.state.items.length)
+    // Remove an item from the end of the array
+    const items = this.state.items.slice(0, this.state.items.length - 1)
     this.setState({ items })
   }
 
@@ -51,8 +53,15 @@ export default class App extends Component {
   }
 
   handlePaddingChange = e => {
+
+
+    const { value } = e.currentTarget
+    const parsedValue = parseInt(value, 0)
+    console.log(parsedValue, Number.isInteger(parsedValue))
+    
+    if (!Number.isInteger(parsedValue)) return
     this.setState({
-      padding: parseInt(e.target.value, 10) || 0
+      padding: parsedValue
     })
   }
   
@@ -73,6 +82,8 @@ export default class App extends Component {
   }
 
   render() {
+    console.log(this.state.padding)
+    
     return (
       <div className="container">
 
@@ -98,7 +109,7 @@ export default class App extends Component {
             <option value="right">right</option>
           </select>
           <label htmlFor="padding">Padding (px): </label>
-          <input type="number" onChange={this.handlePaddingChange} value={this.state.padding} />
+          <input type="text" onChange={this.handlePaddingChange} value={this.state.padding} />
           <label htmlFor="padding">Friction <span className="sub">(between 0.85 and 0.95 works best)</span>: </label>
           <input type="number" onChange={this.handleFrictionChange} value={this.state.friction} min="0.8" max="0.99" />
         </div>
@@ -118,7 +129,9 @@ export default class App extends Component {
             </button>
           ))}
         </Dragger>
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure omnis atque delectus ea laborum vel, dolorum accusantium. Similique esse ab repellendus impedit quae debitis odit in, totam soluta facere at. </p>
+        <div>
+
+        </div>
       </div>
     )
   }
