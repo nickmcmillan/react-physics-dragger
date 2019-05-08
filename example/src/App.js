@@ -12,13 +12,17 @@ export default class App extends Component {
       disabled: false,
       parallax: 'none',
       friction: 0.9,
+      frame: {
+        progress: 0,
+        x: 0,
+        outerWidth: 0,
+        innerWidth: 0,
+      },
       items: ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
     }
   }
 
-  setRef = ref => {
-    this.inputRefs.push(ref)
-  }
+  setRef = ref => this.inputRefs.push(ref)
 
   handleDisable = () => this.setState(prevState => ({ disabled: !prevState.disabled }))
 
@@ -34,7 +38,9 @@ export default class App extends Component {
     this.setState({ items })
   }
 
-  handleOnMove = val => {
+  handleOnFrame = frame => {
+    this.setState({ frame })
+    
     if (this.state.parallax === 'none') return
     const parallaxFactor = 3
 
@@ -42,10 +48,10 @@ export default class App extends Component {
       if (!ref) return
       let x 
       if (this.state.parallax === 'left') {
-        x = val.x + ref.offsetLeft
+        x = frame.x + ref.offsetLeft
       }
       if (this.state.parallax === 'center') {
-        x = val.x + ref.offsetLeft - (val.outerWidth / parallaxFactor)
+        x = frame.x + ref.offsetLeft - (frame.outerWidth / parallaxFactor)
       }
       ref.style.transform = `translateX(${x / (parallaxFactor * 2) }px)`
     })
@@ -100,7 +106,7 @@ export default class App extends Component {
           disabled={this.state.disabled}
           ResizeObserver={ResizeObserver}
           friction={this.state.friction}
-          onMove={this.handleOnMove}
+          onFrame={this.handleOnFrame}
           onStaticClick={this.handleStaticClick}
           className="dragger"
         >
@@ -110,9 +116,31 @@ export default class App extends Component {
             </button>
           ))}
         </Dragger>
-        <div>
 
+        <p>Use the `onFrame` callback to access the following data on each frame;</p>
+
+        <div>
+          outerWidth: {this.state.frame.outerWidth}px<br/>
+          innerWidth: {this.state.frame.innerWidth}px<br/>
+          x: {this.state.frame.x}px<br/>
+          progress: {this.state.frame.progress} <br/>
         </div>
+
+        <Dragger
+          disabled={this.state.disabled}
+          ResizeObserver={ResizeObserver}
+          friction={this.state.friction}
+          onFrame={this.handleOnFrame}
+          onStaticClick={this.handleStaticClick}
+          className="dragger"
+        >
+          {this.state.items.map((item, i) => (
+            <button className="item" key={`${item}-${i}`}>
+              <div className="inner" ref={this.setRef}>{item}</div>
+            </button>
+          ))}
+        </Dragger>
+        
       </div>
     )
   }

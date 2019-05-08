@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import styles from './styles.css'
 
 import { areTwoArraysSame, roundNum } from './utils'
@@ -63,7 +63,7 @@ export default class Dragger extends React.Component {
     // Update the edge boundaries when the outer element is resized
     // Check first if ResizeObserver is available on the window or if a polyfill is supplied by the user via props
     if (!window.ResizeObserver && !this.props.ResizeObserver) {
-      throw new Error('No ResizeObserver is available. Please check the docs for a guide on how to add a polyfill.')
+      throw new Error('No ResizeObserver is available. Please check the docs for instructions on how to add a polyfill.')
     }
     const Ro = window.ResizeObserver || this.props.ResizeObserver
     const observer = new Ro(entries => {
@@ -78,18 +78,17 @@ export default class Dragger extends React.Component {
       this.leftBound = left
       this.rightBound = right
 
-      // this.rafId = window.requestAnimationFrame(this.update)
+      // broadcast onFrame event on component mount, as well as on resize
+      if (this.props.onFrame) {
+        this.props.onFrame({
+          x: roundNum(this.nativePosition),
+          outerWidth: this.outerWidth,
+          innerWidth: this.innerWidth,
+          progress: roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth)),
+        })
+      }
     })
     observer.observe(this.outerEl)
-
-    if (this.props.onMove) {
-      this.props.onMove({
-        x: roundNum(this.nativePosition),
-        outerWidth: this.outerWidth,
-        innerWidth: this.innerWidth,
-        progress: roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth)),
-      })
-    }
   }
 
   componentDidUpdate(prevProps) {
@@ -119,7 +118,7 @@ export default class Dragger extends React.Component {
   }
 
   update = () => {
-    this.velocityX *= this.settings.friction
+    this.velocityX = this.velocityX * this.settings.friction
 
     if (!this.state.isDragging && this.nativePosition < this.leftBound) {
       this.velocityX = applyBoundForce({
@@ -130,6 +129,7 @@ export default class Dragger extends React.Component {
         velocityX: this.velocityX,
       })
     }
+
     if (!this.state.isDragging && this.nativePosition > this.rightBound) {
       this.velocityX = applyBoundForce({
         bound: this.rightBound,
@@ -147,7 +147,7 @@ export default class Dragger extends React.Component {
       velocityX: this.velocityX,
     })
 
-    this.nativePosition += this.velocityX
+    this.nativePosition = this.nativePosition + this.velocityX
 
     const isInfinitesimal = roundNum(Math.abs(this.velocityX)) < 0.001
 
@@ -161,8 +161,8 @@ export default class Dragger extends React.Component {
       this.rafId = window.requestAnimationFrame(this.update)
     }
 
-    if (this.props.onMove) {
-      this.props.onMove({
+    if (this.props.onFrame) {
+      this.props.onFrame({
         x: roundNum(this.nativePosition),
         outerWidth: this.outerWidth,
         innerWidth: this.innerWidth,
@@ -219,12 +219,12 @@ export default class Dragger extends React.Component {
     this.downX = this.inputType === 'mouse' ? e.pageX : e.touches[0].pageX
     this.dragStartPosition = this.nativePosition
 
-    this.onMove(e)
+    // this.onMove(e)
 
     if (this.inputType === 'mouse') {
       window.addEventListener('mousemove', this.onMove)
       window.addEventListener('mouseup', this.onRelease)
-    } else {
+    } else if (this.inputType === 'touch') {
       window.addEventListener('touchmove', this.onMove)
       window.addEventListener('touchend', this.onRelease)
     }

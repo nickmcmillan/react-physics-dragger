@@ -68,6 +68,10 @@ select {
   background-color: #aac4ee;
 }
 
+.dragger.is-disabled {
+  opacity: 0.7;
+}
+
 .item {
   background-color: #fff;
   outline: 0;
