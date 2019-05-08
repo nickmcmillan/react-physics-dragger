@@ -11,7 +11,6 @@ export default class App extends Component {
     this.state = {
       disabled: false,
       parallax: 'none',
-      padding: 0,
       friction: 0.9,
       items: ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
     }
@@ -51,19 +50,6 @@ export default class App extends Component {
       ref.style.transform = `translateX(${x / (parallaxFactor * 2) }px)`
     })
   }
-
-  handlePaddingChange = e => {
-
-
-    const { value } = e.currentTarget
-    const parsedValue = parseInt(value, 0)
-    console.log(parsedValue, Number.isInteger(parsedValue))
-    
-    if (!Number.isInteger(parsedValue)) return
-    this.setState({
-      padding: parsedValue
-    })
-  }
   
   handleFrictionChange = e => {
     this.setState({
@@ -82,8 +68,6 @@ export default class App extends Component {
   }
 
   render() {
-    console.log(this.state.padding)
-    
     return (
       <div className="container">
 
@@ -108,17 +92,14 @@ export default class App extends Component {
             <option value="center">center</option>
             <option value="right">right</option>
           </select>
-          <label htmlFor="padding">Padding (px): </label>
-          <input type="text" onChange={this.handlePaddingChange} value={this.state.padding} />
-          <label htmlFor="padding">Friction <span className="sub">(between 0.85 and 0.95 works best)</span>: </label>
-          <input type="number" onChange={this.handleFrictionChange} value={this.state.friction} min="0.8" max="0.99" />
+          <label htmlFor="friction">Friction <span className="sub">(between 0.85 and 0.95 works best)</span>: </label>
+          <input id="friction" type="number" onChange={this.handleFrictionChange} value={this.state.friction} min="0.8" max="0.99" />
         </div>
 
         <Dragger
           disabled={this.state.disabled}
           ResizeObserver={ResizeObserver}
           friction={this.state.friction}
-          padding={this.state.padding}
           onMove={this.handleOnMove}
           onStaticClick={this.handleStaticClick}
           className="dragger"

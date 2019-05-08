@@ -1,6 +1,10 @@
 import * as React from 'react'
 import styles from './styles.css'
 
+import { areTwoArraysSame, roundNum } from './utils'
+import { applyDragForce, applyBoundForce } from './force'
+import getBoundaries from './getBoundaries'
+
 // function goToPosition(pos) {
 //   var distance = pos - positionX
 //   var force = distance * (1 - this.settings.friction)
@@ -16,11 +20,10 @@ export default class Dragger extends React.Component {
 
     this.settings = {
       friction: props.friction || 0.92,
-      padding: props.padding || 0,
     }
 
     this.state = {
-      restPositionX: this.settings.padding,
+      restPositionX: 0,
       isDragging: false,
     }
 
@@ -32,15 +35,14 @@ export default class Dragger extends React.Component {
     this.velocityX = 0
     this.downX = 0
     this.dragStartPosition = 0
+    this.nativePosition = 0 // starting position
     this.dragPosition = this.nativePosition
-    this.nativePosition = this.settings.padding // starting position
     this.rafId = null
 
     this.outerEl = null
     this.innerEl = null
     this.outerWidth = 0
     this.innerWidth = 0
-
   }
 
   componentDidMount() {
@@ -49,8 +51,14 @@ export default class Dragger extends React.Component {
     this.outerWidth = this.outerEl.offsetWidth
     this.innerWidth = this.innerEl.offsetWidth
 
-    this.leftBound = -this.innerWidth + this.outerWidth - this.settings.padding
-    this.rightBound = this.outerEl.clientLeft + this.settings.padding
+    const { left, right } = getBoundaries({
+      outerWidth: this.outerWidth,
+      innerWidth: this.innerWidth,
+      elClientLeft: this.outerEl.clientLeft,
+    })
+
+    this.leftBound = left
+    this.rightBound = right
 
     // Update the edge boundaries when the outer element is resized
     // Check first if ResizeObserver is available on the window or if a polyfill is supplied by the user via props
@@ -58,19 +66,28 @@ export default class Dragger extends React.Component {
       throw new Error('No ResizeObserver is available. Please check the docs for a guide on how to add a polyfill.')
     }
     const Ro = window.ResizeObserver || this.props.ResizeObserver
-    this.myObserver = new Ro(entries => {
+    const observer = new Ro(entries => {
       this.outerWidth = entries[0].contentRect.width
-      this.setBoundaries(this.innerWidth, this.outerWidth)
+
+      const { left, right } = getBoundaries({
+        outerWidth: this.outerWidth,
+        innerWidth: this.innerWidth,
+        elClientLeft: this.outerEl.clientLeft,
+      })
+
+      this.leftBound = left
+      this.rightBound = right
+
       // this.rafId = window.requestAnimationFrame(this.update)
     })
-    this.myObserver.observe(this.outerEl)
+    observer.observe(this.outerEl)
 
     if (this.props.onMove) {
       this.props.onMove({
-        x: this.roundNum(this.nativePosition),
+        x: roundNum(this.nativePosition),
         outerWidth: this.outerWidth,
         innerWidth: this.innerWidth,
-        progress: this.roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth - this.settings.padding)),
+        progress: roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth)),
       })
     }
   }
@@ -81,99 +98,77 @@ export default class Dragger extends React.Component {
       this.settings.friction = this.props.friction
     }
 
-    if (this.props.padding && this.settings.padding !== this.props.padding) {
-      this.settings.padding = this.props.padding
-      this.outerWidth = this.outerEl.offsetWidth
-      this.innerWidth = this.innerEl.offsetWidth
-      this.setBoundaries(this.innerWidth, this.outerWidth)
-
-      this.rafId = window.requestAnimationFrame(this.update)
-    }
-
     const oldKeys = this.props.children.map(child => child.key)
     const newKeys = prevProps.children.map(child => child.key)
-    const childrenChanged = this.areTwoArraysSame(oldKeys, newKeys)
+    const childrenChanged = areTwoArraysSame(oldKeys, newKeys)
 
     if (!childrenChanged) {
       this.outerWidth = this.outerEl.offsetWidth
       this.innerWidth = this.innerEl.offsetWidth
-      this.setBoundaries(this.innerWidth, this.outerWidth)
+      const { left, right } = getBoundaries({
+        outerWidth: this.outerWidth,
+        innerWidth: this.innerWidth,
+        elClientLeft: this.outerEl.clientLeft,
+      })
+
+      this.leftBound = left
+      this.rightBound = right
 
       this.rafId = window.requestAnimationFrame(this.update)
     }
   }
 
-  setBoundaries = () => {
-    this.outerWidth = this.outerEl.offsetWidth
-    this.innerWidth = this.innerEl.offsetWidth
-    const innerIsLessThanOuter = this.innerWidth < this.outerWidth
-    const leftEdge = this.outerEl.clientLeft + this.settings.padding
-    const rightEdge = -this.innerWidth + this.outerWidth - this.settings.padding
-
-    this.leftBound = innerIsLessThanOuter ? leftEdge : rightEdge
-    this.rightBound = innerIsLessThanOuter ? rightEdge : leftEdge
-  }
-
-  areTwoArraysSame = (arr1, arr2) => arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index])
-
-  roundNum = num => Math.round(num * 1000) / 1000
-
   update = () => {
     this.velocityX *= this.settings.friction
 
-    if (!this.state.isDragging && this.nativePosition < this.leftBound) this.applyBoundForce(this.leftBound, 'left')
-    if (!this.state.isDragging && this.nativePosition > this.rightBound) this.applyBoundForce(this.rightBound, 'right')
-    this.applyDragForce()
+    if (!this.state.isDragging && this.nativePosition < this.leftBound) {
+      this.velocityX = applyBoundForce({
+        bound: this.leftBound,
+        edge: 'left',
+        nativePosition: this.nativePosition,
+        friction: this.settings.friction,
+        velocityX: this.velocityX,
+      })
+    }
+    if (!this.state.isDragging && this.nativePosition > this.rightBound) {
+      this.velocityX = applyBoundForce({
+        bound: this.rightBound,
+        edge: 'right',
+        nativePosition: this.nativePosition,
+        friction: this.settings.friction,
+        velocityX: this.velocityX,
+      })
+    }
+    
+    this.velocityX = applyDragForce({
+      isDragging: this.state.isDragging,
+      dragPosition: this.dragPosition,
+      nativePosition: this.nativePosition,
+      velocityX: this.velocityX,
+    })
+
     this.nativePosition += this.velocityX
 
-    const isInfinitesimal = this.roundNum(Math.abs(this.velocityX)) < 0.001
+    const isInfinitesimal = roundNum(Math.abs(this.velocityX)) < 0.001
 
     if (!this.state.isDragging && isInfinitesimal) {
       // no longer dragging and inertia has stopped
       window.cancelAnimationFrame(this.rafId)
-      this.setState({ restPositionX: this.roundNum(this.nativePosition) })
+      this.setState({ restPositionX: roundNum(this.nativePosition) })
     } else {
-      // bypass reacts render method
-      this.draggerRefInner.current.style.transform = `translate3d(${this.roundNum(this.nativePosition)}px,0,0)`
+      // bypass Reacts render method during animation, similar to react-spring
+      this.draggerRefInner.current.style.transform = `translate3d(${roundNum(this.nativePosition)}px,0,0)`
       this.rafId = window.requestAnimationFrame(this.update)
     }
 
     if (this.props.onMove) {
       this.props.onMove({
-        x: this.roundNum(this.nativePosition),
+        x: roundNum(this.nativePosition),
         outerWidth: this.outerWidth,
         innerWidth: this.innerWidth,
-        progress: this.roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth - this.settings.padding)),
+        progress: roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth)),
       })
     }
-  }
-
-  applyBoundForce = (bound, edge) => {
-    // bouncing past bound
-    const distance = bound - this.nativePosition
-    let force = distance * (1 - this.settings.friction)
-    // calculate resting position with this force
-    const rest = this.nativePosition + (this.velocityX + force) / (1 - this.settings.friction)
-    // apply force if resting position is out of bounds
-    if ((edge === 'right' && rest > bound) || (edge === 'left' && rest < bound)) {
-      this.applyForce(force)
-    } else {
-      // if in bounds, apply force to align at bounds
-      force = distance * (1 - this.settings.friction) - this.velocityX
-      this.applyForce(force)
-    }
-  }
-
-  applyDragForce = () => {
-    if (!this.state.isDragging) return
-
-    const dragVelocity = this.dragPosition - this.nativePosition
-    const dragForce = dragVelocity - this.velocityX
-    this.velocityX += dragForce
-  }
-
-  applyForce = (force) => {
-    this.velocityX += force
   }
 
   onMove = (e) => {
@@ -238,10 +233,10 @@ export default class Dragger extends React.Component {
   render() {
     return (
       <div
-        className={`${styles.outer} ${this.state.isDragging ? styles.isDragging : ''} ${this.props.disabled ? styles.isDisabled : ''} ${this.props.className}`}
+        ref={this.draggerRefOuter}
+        className={`${styles.outer} ${this.state.isDragging ? styles.isDragging : ''}${this.props.disabled ? ' is-disabled' : ''} ${this.props.className}`}
         onTouchStart={this.onStart}
         onMouseDown={this.onStart}
-        ref={this.draggerRefOuter}
         style={{ ...this.props.style }}
       >
         <div

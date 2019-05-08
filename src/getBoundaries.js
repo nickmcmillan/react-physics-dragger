@@ -2,12 +2,10 @@ function getBoundaries({
   outerWidth,
   innerWidth,
   elClientLeft,
-  padding,
 }) {
-
   const innerIsLessThanOuter = innerWidth < outerWidth
-  const leftEdge = elClientLeft + padding
-  const rightEdge = -innerWidth + outerWidth - padding
+  const leftEdge = elClientLeft
+  const rightEdge = -innerWidth + outerWidth
 
   return {
     left: innerIsLessThanOuter ? leftEdge : rightEdge,
