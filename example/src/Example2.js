@@ -54,7 +54,7 @@ const Example2 = () => {
   return (
     <section className="section">
       <h2>Using the onFrame callback</h2>
-      <p>Use this to access information about the dragger on each frame. You could use these values to achieve a parallax effect.</p>
+      <p>Use this to access values on each frame. You could use these values to achieve a parallax effect.</p>
 
       <pre>
         outerWidth: {frame.outerWidth}px<br />
@@ -69,12 +69,11 @@ const Example2 = () => {
         className="dragger"
       >
         {items.map((item, i) => (
-          <button className="item item-img" key={item.id}>
+          <div className="item-img" key={item.id}>
             <img className="img" ref={refArr[i]} src={item.src} alt="" />
-          </button>
+          </div>
         ))}
       </Dragger>
-      <p>The images and names used on this page are from the Scott Pilgrim graphic novels by Bryan Lee O'Malley.</p>
 
     </section>
   )

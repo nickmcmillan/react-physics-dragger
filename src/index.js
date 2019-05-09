@@ -42,8 +42,9 @@ export default class Dragger extends React.Component {
   componentDidMount() {
     this.outerEl = this.draggerRefOuter.current
     this.innerEl = this.draggerRefInner.current
-    this.outerWidth = this.outerEl.offsetWidth
-    this.innerWidth = this.innerEl.offsetWidth
+    // need to use scrollWidth instead of offsetWidth
+    this.outerWidth = this.outerEl.scrollWidth
+    this.innerWidth = this.innerEl.scrollWidth
 
     const { left, right } = getBoundaries({
       outerWidth: this.outerWidth,
@@ -119,7 +120,7 @@ export default class Dragger extends React.Component {
         velocityX: this.velocityX,
       })
     }
-    
+
     this.velocityX = applyDragForce({
       isDragging: this.state.isDragging,
       dragPosition: this.dragPosition,

@@ -1,18 +1,12 @@
 .outer {
-  position: relative;
-}
-
-.outer {
   cursor: grab;
 }
 
 .inner {
   white-space: nowrap;
-  position: relative;
   user-select: none;
   -webkit-overflow-scrolling: touch;
   will-change: transform;
-  display: inline-block;
 }
 
 .isDragging {

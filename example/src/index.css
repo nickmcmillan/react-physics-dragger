@@ -90,7 +90,7 @@ button.btn:focus {
 }
 
 .dragger.is-disabled {
-  opacity: 0.7;
+  opacity: 0.5;
   cursor: default;
 }
 
@@ -98,45 +98,40 @@ button.btn:focus {
   cursor: default;
 }
 
-.item {
+.item-standard {
   background-color: #fff;
   outline: 0;
   border: 0;
   display: inline-block;
-  padding: 0;
+  padding: 1rem 2rem;
   border: 2px solid #333;
   border-radius: 40px;
   margin: 0 1rem;
   margin-right: 1rem;
-  font-size: 1rem;
-  
 }
 
-.item:first-child {
+.item-standard:first-child {
   margin-left: 0;
 }
 
-.item:last-child {
+.item-standard:last-child {
   margin-right: 0;
 }
 
-.inner {
-  padding: 1rem 2rem;
-}
-
-@media (min-width: 768px) {
-  .button-group {
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-  }
+.item-full {
+  width: 100%;
+  display: inline-block;
 }
 
 .item-img {
   overflow: hidden;
   width: 12rem;
-  padding-top: 30%;
+  padding-top: 20rem;
   position: relative;
+  display: inline-block;
+  border: 2px solid #333;
+  border-radius: 40px;
+  margin: 0 1rem;
 }
 
 .img {
@@ -149,4 +144,12 @@ button.btn:focus {
 
 pre {
   margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .button-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+  }
 }

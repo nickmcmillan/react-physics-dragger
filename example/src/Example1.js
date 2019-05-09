@@ -19,7 +19,6 @@ const Example2 = () => {
 
   return (
     <section className="section">
-      <h2>Simple Example</h2>
 
       <Dragger
         disabled={isDisabled}
@@ -31,9 +30,7 @@ const Example2 = () => {
         className="dragger"
       >
         {items.map((item, i) => (
-          <button className="item" key={`${item}-${i}`}>
-            <div className="inner">{item}</div>
-          </button>
+          <button className="item-standard" key={`${item}-${i}`}>{item}</button>
         ))}
       </Dragger>
 
