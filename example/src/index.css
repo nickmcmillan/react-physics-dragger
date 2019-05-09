@@ -6,13 +6,9 @@ html {
   box-sizing: inherit;
 }
 
-
 body {
   margin: 0;
   font-family: sans-serif;
-}
-
-.root {
   overflow-x: hidden;
 }
 
@@ -21,20 +17,24 @@ h1 {
   margin-bottom: 2rem;
 }
 
+h2 {
+  font-size: 1rem;
+}
+
 input {
   max-width: 5rem;
 }
-
 
 button {
   font: inherit;
   font-size: 1rem;
   line-height: normal;
   margin: 0;
-  padding: 1rem;
+  padding: 0.6rem;
   width: auto;
   overflow: visible;
   background: transparent;
+  cursor: pointer;
   -webkit-font-smoothing: inherit;
   -moz-osx-font-smoothing: inherit;
   -webkit-appearance: none;
@@ -59,6 +59,7 @@ button {
   max-width: 60rem;
   margin: 0 auto;
   padding: 0 1rem;
+  
 }
 
 .dragger {
