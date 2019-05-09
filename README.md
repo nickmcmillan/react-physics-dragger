@@ -1,6 +1,6 @@
 # react physics dragger
 
-> Simple, no-frills horizontal dragger/slider
+> A simple, no-frills horiztonal dragger/slider with physics
 
 [View on Codesandbox](https://codesandbox.io/s/54452vm5kp)
 
@@ -8,9 +8,11 @@
 ![npm bundle size](https://img.shields.io/bundlephobia/min/react-physics-dragger.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg?style=flat-square)](https://standardjs.com)
 
-Basically creates a wrapper element with horizontal dragging capabilities. It uses basic physics which apply friction and also bouncing past boundaries (similar to Apple).
+A React component which basically adds a wrapper element with horizontal dragging capabilities. It uses a little bit of physics to apply friction and boundary bouncing (similar to Apple's interfaces, and the [Flickity](https://flickity.metafizzy.co/) carousel).
 
-Works with both touch and mouse.
+* Works with both touch and mouse
+* 0 dependencies
+* Super small (Gzip 2.5kb)
 
 
 ## Example usage
@@ -21,39 +23,40 @@ yarn add react-physics-dragger
 npm i react-physics-dragger
 ```
 
-This uses [ResizeObserver](https://caniuse.com/#search=resizeobserver). You might need to add a polyfill. If so, instructions below.
+It uses [ResizeObserver](https://caniuse.com/#search=resizeobserver) so you might need to add a polyfill. If so, instructions below.
 
 ```
 import Dragger from 'react-physics-dragger'
-import ResizeObserver from 'resize-observer-polyfill' // If you need a ResizeObserver polyfill, this one works great.
+import ResizeObserver from 'resize-observer-polyfill' // If you need a ResizeObserver polyfill, this one works pretty great.
 
-class App extends Component {
-  render() {
-    return (
-      <Dragger
-          disabled={false} // Optional. Default is false
-          ResizeObserver={ResizeObserver} // If you need the polyfill, pass it in here. Simples. 
-          friction={0.9} // Optional. Default is 0.9
-          padding={0} // Optional. This is the boundary padding on the left and right. Default is 0
-          onMove={this.handleOnMove} // Optional. This is a callback function, fired on every movement. Also fired on initial mount.
-          className="dragger" // Pass in whatever classnames or styles you'd like. This will accept and spread all props.
-        >
-          <div>1</div>
-          <div>2</div>
-          <div>3</div>
-        </Dragger>
-    )
-  }
+const App = () => {
+  return (
+    <Dragger
+      disabled={false} // Optional. Default is false.
+      ResizeObserver={ResizeObserver} // If you need the polyfill pass it in here. Simples.
+      friction={0.9} // Optional
+      onFrame={frame => {...}} // Optional. This function is fired on every movement, resize, and mount.
+      className="dragger" // Pass in whatever classNames or styles you'd like.
+    >
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+    </Dragger>
+  )
 }
-
-export default App
 ```
 
 
 ## Todo: 
-- [ ] Maybe convert it to hooks, less imperative, more functional
-- [ ] Could it work with sideways scrolling?
-- [ ] Scroll to x position API
+- [ ] Tests!
+- [ ] Maybe convert it to hooks?
+- [ ] Could it work with sideways mouse scrolling?
+
+<br>
+
+### Inspired by [Dave DeSandro's](https://twitter.com/desandro) work on Practical UI Physics <br>
+https://www.youtube.com/watch?v=90oMnMFozEE <br>
+https://codepen.io/desandro/pen/QbPKEq
 
 This library was packaged with https://github.com/transitive-bullshit/create-react-library
 

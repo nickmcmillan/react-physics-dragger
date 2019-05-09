@@ -1,3 +1,7 @@
+// Inspired by Dave DeSandro's (@desandro) work on Practical UI Physics
+// https://www.youtube.com/watch?v=90oMnMFozEE
+// https://codepen.io/desandro/pen/QbPKEq
+
 function applyForce({ velocityX, force }) {
   return velocityX + force
 }
@@ -18,16 +22,10 @@ export function applyBoundForce({ bound, edge, nativePosition, friction, velocit
   const rest = nativePosition + (velocityX + force) / (1 - friction)
   // apply force if resting position is out of bounds
   if ((edge === 'right' && rest > bound) || (edge === 'left' && rest < bound)) {
-    return applyForce({
-      velocityX: velocityX,
-      force,
-    })
+    return applyForce({ velocityX, force })
   } else {
     // if in bounds, apply force to align at bounds
     force = distance * (1 - friction) - velocityX
-    return applyForce({
-      velocityX: velocityX,
-      force,
-    })
+    return applyForce({ velocityX, force })
   }
 }
