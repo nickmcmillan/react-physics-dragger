@@ -7,7 +7,16 @@ const App = () => {
   return (
     <div className="container">
 
-      <h1>React Physics Dragger</h1>
+      <h1>
+        <a
+          href="https://github.com/nickmcmillan/react-physics-dragger"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="title-anchor"
+        >
+          React Physics Dragger
+        </a>
+      </h1>
 
       <Example1 />
       <Example2 />

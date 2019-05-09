@@ -2,7 +2,39 @@ import React, { useState, useRef, useEffect } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
-const items = ['Cabbage', 'Turnip', 'Radish', 'Carrot', 'Biscuit', 'Crumpet', 'Scone', 'Jam']
+import img0 from './imgs/0.jpg'
+import img1 from './imgs/1.jpg'
+import img2 from './imgs/2.jpg'
+import img3 from './imgs/3.jpg'
+import img4 from './imgs/4.jpg'
+import img5 from './imgs/5.jpg'
+
+const items = [
+  {
+    src: img0,
+    id: 0,
+  },
+  {
+    src: img1,
+    id: 1,
+  },
+  {
+    src: img2,
+    id: 2,
+  },
+  {
+    src: img3,
+    id: 3,
+  },
+  {
+    src: img4,
+    id: 4,
+  },
+  {
+    src: img5,
+    id: 5,
+  },
+]
 
 const Example2 = () => {
 
@@ -12,7 +44,7 @@ const Example2 = () => {
   const refArr = Array.from({ length: items.length }, a => useRef(null));
   
   useEffect(() => {
-    const parallaxFactor = 10
+    const parallaxFactor = -10
     refArr.forEach(ref => {
       const x = (frame.x + ref.current.offsetLeft) / parallaxFactor
       ref.current.style.transform = `translateX(${x}px)`
@@ -20,29 +52,31 @@ const Example2 = () => {
   }, [frame.x]) // we're only interested in changes to the 'x' value
 
   return (
-    <div>
+    <section className="section">
       <h2>Using the onFrame callback</h2>
       <p>Use this to access information about the dragger on each frame. You could use these values to achieve a parallax effect.</p>
 
-      <p>
+      <pre>
         outerWidth: {frame.outerWidth}px<br />
         innerWidth: {frame.innerWidth}px<br />
         x: {frame.x}px<br />
         progress: {frame.progress} <br />
-      </p>
+      </pre>
 
       <Dragger
         ResizeObserver={ResizeObserver}
         onFrame={frame => setFrame(frame)}
+        className="dragger"
       >
         {items.map((item, i) => (
-          <button className="item" key={`${item}-${i}`}>
-            <div className="inner" ref={refArr[i]}>{item}</div>
+          <button className="item item-img" key={item.id}>
+            <img className="img" ref={refArr[i]} src={item.src} alt="" />
           </button>
         ))}
       </Dragger>
+      <p>The images and names used on this page are from the Scott Pilgrim graphic novels by Bryan Lee O'Malley.</p>
 
-    </div>
+    </section>
   )
 }
 
