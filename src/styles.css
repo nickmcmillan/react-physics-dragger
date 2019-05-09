@@ -7,6 +7,7 @@
   user-select: none;
   -webkit-overflow-scrolling: touch;
   will-change: transform;
+  display: inline-block;
 }
 
 .isDragging {

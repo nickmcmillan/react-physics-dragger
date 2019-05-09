@@ -24,12 +24,10 @@ const Example2 = () => {
       <Dragger
         ResizeObserver={ResizeObserver}
         onFrame={frame => setFrame(frame)}
-        className="dragger"
+        className="dragger dragger--full"
       >
-        <div>
-          <div className="item-standard" ref={ref}>
-            Game over →
-          </div>
+        <div className="item-standard" ref={ref}>
+          Game over →
         </div>
       </Dragger>
     </section>

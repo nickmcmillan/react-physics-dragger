@@ -89,6 +89,10 @@ button.btn:focus {
   background-color: mistyrose;
 }
 
+.dragger--full .dragger-inner {
+  display: block;
+}
+
 .dragger.is-disabled {
   opacity: 0.5;
   cursor: default;
