@@ -12,7 +12,6 @@ export default class App extends Component {
       disabled: false,
       parallax: 'none',
       friction: 0.9,
-      forcedPosition: false,
       frame: {
         progress: 0,
         x: 0,
