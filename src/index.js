@@ -1,15 +1,9 @@
 import React from 'react'
-import styles from './styles.css'
-
-import { areTwoArraysSame, roundNum } from './utils'
+import { roundNum } from './utils'
 import { applyDragForce, applyBoundForce } from './force'
 import getBoundaries from './getBoundaries'
 
-// function goToPosition(pos) {
-//   var distance = pos - positionX
-//   var force = distance * (1 - this.settings.friction)
-//   applyForce(force)
-// }
+import styles from './styles.css'
 
 export default class Dragger extends React.Component {
 
@@ -61,13 +55,18 @@ export default class Dragger extends React.Component {
     this.rightBound = right
 
     // Update the edge boundaries when the outer element is resized
+    // Update the inner width when the children change size
     // Check first if ResizeObserver is available on the window or if a polyfill is supplied by the user via props
     if (!window.ResizeObserver && !this.props.ResizeObserver) {
       throw new Error('No ResizeObserver is available. Please check the docs for instructions on how to add a polyfill.')
     }
+
     const Ro = window.ResizeObserver || this.props.ResizeObserver
     const observer = new Ro(entries => {
-      this.outerWidth = entries[0].contentRect.width
+      // use the elements ID to determine whether the inner or the outer has been observed
+      const id = entries[0].target.id
+      if (id === 'Dragger-inner') this.innerWidth = entries[0].contentRect.width
+      if (id === 'Dragger-outer') this.outerWidth = entries[0].contentRect.width
 
       const { left, right } = getBoundaries({
         outerWidth: this.outerWidth,
@@ -78,7 +77,7 @@ export default class Dragger extends React.Component {
       this.leftBound = left
       this.rightBound = right
 
-      // broadcast onFrame event on component mount, as well as on resize
+      // broadcast onFrame event on component mount, as well as when the inner or outer elements change size
       if (this.props.onFrame) {
         this.props.onFrame({
           x: roundNum(this.nativePosition),
@@ -89,31 +88,12 @@ export default class Dragger extends React.Component {
       }
     })
     observer.observe(this.outerEl)
+    observer.observe(this.innerEl)
   }
 
   componentDidUpdate(prevProps) {
-
     if (this.props.friction && this.settings.friction !== this.props.friction) {
       this.settings.friction = this.props.friction
-    }
-
-    const oldKeys = this.props.children.map(child => child.key)
-    const newKeys = prevProps.children.map(child => child.key)
-    const childrenChanged = areTwoArraysSame(oldKeys, newKeys)
-
-    if (!childrenChanged) {
-      this.outerWidth = this.outerEl.offsetWidth
-      this.innerWidth = this.innerEl.offsetWidth
-      const { left, right } = getBoundaries({
-        outerWidth: this.outerWidth,
-        innerWidth: this.innerWidth,
-        elClientLeft: this.outerEl.clientLeft,
-      })
-
-      this.leftBound = left
-      this.rightBound = right
-
-      this.rafId = window.requestAnimationFrame(this.update)
     }
   }
 
@@ -219,7 +199,7 @@ export default class Dragger extends React.Component {
     this.downX = this.inputType === 'mouse' ? e.pageX : e.touches[0].pageX
     this.dragStartPosition = this.nativePosition
 
-    // this.onMove(e)
+    this.onMove(e)
 
     if (this.inputType === 'mouse') {
       window.addEventListener('mousemove', this.onMove)
@@ -233,6 +213,7 @@ export default class Dragger extends React.Component {
   render() {
     return (
       <div
+        id="Dragger-outer"
         ref={this.draggerRefOuter}
         className={`${styles.outer} ${this.state.isDragging ? styles.isDragging : ''}${this.props.disabled ? ' is-disabled' : ''} ${this.props.className}`}
         onTouchStart={this.onStart}
@@ -240,6 +221,7 @@ export default class Dragger extends React.Component {
         style={{ ...this.props.style }}
       >
         <div
+          id="Dragger-inner"
           ref={this.draggerRefInner}
           className={`${styles.inner} dragger-inner`}
           style={{ 'transform': `translateX(${this.state.restPositionX}px)` }}
