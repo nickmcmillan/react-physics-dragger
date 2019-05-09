@@ -25,9 +25,8 @@ input {
   max-width: 5rem;
 }
 
-input,
-button,
-select {
+
+button {
   font: inherit;
   font-size: 1rem;
   line-height: normal;
@@ -52,6 +51,8 @@ select {
 
 .button-group {
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
 }
 
 .container {
@@ -94,5 +95,5 @@ select {
 }
 
 .inner {
-  padding: 2rem 5rem;
+  padding: 2rem 4rem;
 }

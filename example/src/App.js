@@ -12,6 +12,7 @@ export default class App extends Component {
       disabled: false,
       parallax: 'none',
       friction: 0.9,
+      forcedPosition: false,
       frame: {
         progress: 0,
         x: 0,
@@ -91,15 +92,24 @@ export default class App extends Component {
           </button>
         </div>
         <div className="button-group">
-          <label htmlFor="parallax">Parallax origin: </label>
+          {/* <label htmlFor="parallax">Parallax origin: </label>
           <select name="parallax" id="parallax" onChange={this.handleSelectChange}>
             <option value="none">none</option>
             <option value="left">left</option>
             <option value="center">center</option>
             <option value="right">right</option>
-          </select>
-          <label htmlFor="friction">Friction <span className="sub">(between 0.85 and 0.95 works best)</span>: </label>
-          <input id="friction" type="number" onChange={this.handleFrictionChange} value={this.state.friction} min="0.8" max="0.99" />
+          </select> */}
+          <label htmlFor="friction">Friction: </label>
+          <input
+            id="friction"
+            type="range"
+            onChange={this.handleFrictionChange}
+            value={this.state.friction}
+            min="0.8"
+            max="0.95"
+            step="0.01"
+          />
+          <span className="sub"> {this.state.friction}</span>
         </div>
 
         <Dragger
@@ -126,7 +136,7 @@ export default class App extends Component {
           progress: {this.state.frame.progress} <br/>
         </div>
 
-        <Dragger
+        {/* <Dragger
           disabled={this.state.disabled}
           ResizeObserver={ResizeObserver}
           friction={this.state.friction}
@@ -139,7 +149,7 @@ export default class App extends Component {
               <div className="inner" ref={this.setRef}>{item}</div>
             </button>
           ))}
-        </Dragger>
+        </Dragger> */}
         
       </div>
     )
