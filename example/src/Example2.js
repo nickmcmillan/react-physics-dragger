@@ -41,12 +41,13 @@ const Example2 = () => {
   const [frame, setFrame] = useState({})
   
   // https://stackoverflow.com/a/54940592/2255980
-  const refArr = Array.from({ length: items.length }, a => useRef(null));
+  const innerRefArr = Array.from({ length: items.length }, a => useRef(null));
+  const outerRefArr = Array.from({ length: items.length }, a => useRef(null));
   
   useEffect(() => {
     const parallaxFactor = -10
-    refArr.forEach(ref => {
-      const x = (frame.x + ref.current.offsetLeft) / parallaxFactor
+    innerRefArr.forEach((ref, i) => {
+      const x = (frame.x + outerRefArr[i].current.offsetLeft) / parallaxFactor
       ref.current.style.transform = `translateX(${x}px)`
     })
   }, [frame.x]) // we're only interested in changes to the 'x' value
@@ -69,8 +70,8 @@ const Example2 = () => {
         className="dragger"
       >
         {items.map((item, i) => (
-          <div className="item-img" key={item.id}>
-            <img className="img" ref={refArr[i]} src={item.src} alt="" />
+          <div className="item-img" key={item.id} ref={outerRefArr[i]}>
+            <img className="img" ref={innerRefArr[i]} src={item.src} alt="" />
           </div>
         ))}
       </Dragger>

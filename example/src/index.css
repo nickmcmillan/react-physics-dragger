@@ -2,29 +2,40 @@ html {
   box-sizing: border-box;
 }
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: inherit;
 }
 
 body {
   margin: 0;
-  font-family: sans-serif;
-  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica,
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 1.25rem;
+}
+
+.title-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
 }
 
 .title-anchor {
   text-decoration: none;
   color: inherit;
+  display: inline-block;
 }
 
 .title-anchor:hover {
   text-decoration: underline;
-}
-
-h1 {
-  font-size: 2rem;
-  font-weight: normal;
-  margin: 0 0 3rem;
 }
 
 h2 {
@@ -60,7 +71,6 @@ button.btn:hover,
 button.btn:focus {
   border-color: #ffc2bb;
   background-color: mistyrose;
-
 }
 
 .sub {
@@ -87,6 +97,7 @@ button.btn:focus {
   padding-top: 2rem;
   padding-bottom: 2rem;
   background-color: mistyrose;
+  overflow: hidden;
 }
 
 .dragger--full .dragger-inner {
@@ -130,8 +141,7 @@ button.btn:focus {
 .item-img {
   overflow: hidden;
   width: 12rem;
-  padding-top: 20rem;
-  position: relative;
+  height: 20rem;
   display: inline-block;
   border: 2px solid #333;
   border-radius: 40px;
@@ -139,9 +149,6 @@ button.btn:focus {
 }
 
 .img {
-  position: absolute;
-  top: 0;
-  left: -50%;
   width: 150%;
   pointer-events: none;
 }
