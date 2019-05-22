@@ -8,7 +8,7 @@
 [![NPM](https://img.shields.io/npm/v/react-physics-dragger.svg?style=flat-square)](https://www.npmjs.com/package/react-physics-dragger)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/react-physics-dragger.svg?style=flat-square)
 
-[▶ Demo Sandbox](https://codesandbox.io/s/54452vm5kp)
+[▶ Example site](https://react-physics-dragger-demo.netlify.com/)
 
 This is a React component which basically adds a wrapper element with horizontal dragging capabilities. It uses a little bit of physics to apply friction and boundary bouncing (similar to Apple's interfaces, and the [Flickity](https://flickity.metafizzy.co/) carousel).
 
