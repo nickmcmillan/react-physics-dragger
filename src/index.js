@@ -218,7 +218,7 @@ export default function Dragger(props) {
 
   return (
     <div
-      id='Dragger-outer'
+      data-id='Dragger-outer'
       ref={draggerRefOuter}
       className={`${styles.outer} ${state.isDragging ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
@@ -226,13 +226,13 @@ export default function Dragger(props) {
       style={{ ...props.style }}
     >
       <div
-        id='Dragger-inner'
+        data-id='Dragger-inner'
         ref={draggerRefInner}
         className={`${styles.inner} dragger-inner`}
         style={{ 'transform': `translateX(${state.restPositionX}px)` }}
       >
         {props.children}
-        </div>
       </div>
+    </div>
   )
 }
