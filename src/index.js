@@ -154,8 +154,17 @@ export default class Dragger extends React.Component {
 
   onMove = (e) => {
     const x = this.inputType === 'mouse' ? e.pageX : e.touches[0].pageX
-    const move = x - this.downX
-    this.dragPosition = this.dragStartPosition + move
+    const moveVector = x - this.downX
+
+    // gradually increase friction as the dragger is pulled beyond bounds
+    // credit: https://github.com/metafizzy/flickity/blob/master/dist/flickity.pkgd.js#L2894
+    let dragX = this.dragStartPosition + moveVector
+    const originBound = Math.max(this.rightBound, this.dragStartPosition)
+    dragX = dragX > originBound ? (dragX + originBound) * 0.5 : dragX
+    const endBound = Math.min(this.leftBound, this.dragStartPosition)
+    dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
+
+    this.dragPosition = dragX
   }
 
   onRelease = (e) => {
