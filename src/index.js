@@ -10,7 +10,7 @@ export default function Dragger(props) {
   const draggerRefOuter = useRef()
   const draggerRefInner = useRef()
 
-  const [settings, setSettings] = useState({
+  const settings = useRef({
     friction: props.friction || 0.92,
   })
 
@@ -92,18 +92,20 @@ export default function Dragger(props) {
 
   // componentDidUpdate
   useEffect(() => {
-    setSettings({friction: props.friction})
+    if (props.friction) {
+      settings.current = { friction: props.friction }
+    }
   }, [props.friction])
 
   const update = () => {
-    velocityX.current *= settings.friction
+    velocityX.current *= settings.current.friction
 
     if (!state.current.isDragging && nativePosition.current < leftBound.current) {
       velocityX.current = applyBoundForce({
         bound: leftBound.current,
         edge: 'left',
         nativePosition: nativePosition.current,
-        friction: settings.friction,
+        friction: settings.current.friction,
         velocityX: velocityX.current,
       })
     }
@@ -113,7 +115,7 @@ export default function Dragger(props) {
         bound: rightBound.current,
         edge: 'right',
         nativePosition: nativePosition.current,
-        friction: settings.friction,
+        friction: settings.current.friction,
         velocityX: velocityX.current,
       })
     }
