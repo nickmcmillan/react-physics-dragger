@@ -1,5 +1,6 @@
-/* eslint-disable react/prop-types */
 import React, { useEffect, useRef, useState } from 'react'
+import PropTypes from 'prop-types'
+
 import { roundNum } from './utils'
 import { applyDragForce, applyBoundForce } from './force'
 import getBoundaries from './getBoundaries'
@@ -11,7 +12,7 @@ export default function Dragger(props) {
   const draggerRefInner = useRef()
 
   const settings = useRef({
-    friction: props.friction || 0.92,
+    friction: props.friction,
   })
 
   const state = useRef({
@@ -238,4 +239,20 @@ export default function Dragger(props) {
       </div>
     </div>
   )
+}
+
+Dragger.propTypes = {
+  friction: PropTypes.number,
+  ResizeObserver: PropTypes.func,
+  onFrame: PropTypes.func,
+  onStaticClick: PropTypes.func,
+  disabled: PropTypes.bool,
+  className: PropTypes.string,
+  style: PropTypes.object,
+  children: PropTypes.node.isRequired,
+}
+
+Dragger.defaultProps = {
+  friction: 0.92,
+  disabled: false,
 }
