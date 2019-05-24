@@ -33,20 +33,20 @@ export default function Dragger(props) {
 
   const outerEl = useRef(null)
   const innerEl = useRef(null)
-  const [outerWidth, setOuterWidth] = useState(0)
-  const [innerWidth, setInnerWidth] = useState(0)
+  const outerWidth = useRef(0)
+  const innerWidth = useRef(0)
 
   // componentDidMount
   useEffect(() => {
     outerEl.current = draggerRefOuter.current
     innerEl.current = draggerRefInner.current
     // need to use scrollWidth instead of offsetWidth
-    setOuterWidth(outerEl.current.scrollWidth)
-    setInnerWidth(innerEl.current.scrollWidth)
+    outerWidth.current = outerEl.current.scrollWidth
+    innerWidth.current = innerEl.current.scrollWidth
 
     const { left, right } = getBoundaries({
-      outerWidth: outerWidth,
-      innerWidth: innerWidth,
+      outerWidth: outerWidth.current,
+      innerWidth: innerWidth.current,
       elClientLeft: outerEl.current.clientLeft,
     })
 
@@ -64,12 +64,12 @@ export default function Dragger(props) {
     const observer = new Ro(entries => {
       // use the elements ID to determine whether the inner or the outer has been observed
       const id = entries[0].target.dataset.id
-      if (id === 'Dragger-inner') setInnerWidth(entries[0].contentRect.width)
-      if (id === 'Dragger-outer') setOuterWidth(entries[0].contentRect.width)
+      if (id === 'Dragger-inner') innerWidth.current = entries[0].contentRect.width
+      if (id === 'Dragger-outer') outerWidth.current = entries[0].contentRect.width
 
       const { left, right } = getBoundaries({
-        outerWidth: outerWidth,
-        innerWidth: innerWidth,
+        outerWidth: outerWidth.current,
+        innerWidth: innerWidth.current,
         elClientLeft: outerEl.current.clientLeft,
       })
 
@@ -80,9 +80,9 @@ export default function Dragger(props) {
       if (props.onFrame) {
         props.onFrame({
           x: roundNum(nativePosition),
-          outerWidth: outerWidth,
-          innerWidth: innerWidth,
-          progress: roundNum((nativePosition) / (outerWidth - innerWidth)),
+          outerWidth: outerWidth.current,
+          innerWidth: innerWidth.current,
+          progress: roundNum((nativePosition) / (outerWidth.current - innerWidth.current)),
         })
       }
     })
@@ -142,9 +142,9 @@ export default function Dragger(props) {
     if (props.onFrame) {
       props.onFrame({
         x: roundNum(nativePosition),
-        outerWidth: outerWidth,
-        innerWidth: innerWidth,
-        progress: roundNum((nativePosition) / (outerWidth - innerWidth)),
+        outerWidth: outerWidth.current,
+        innerWidth: innerWidth.current,
+        progress: roundNum((nativePosition) / (outerWidth.current - innerWidth.current)),
       })
     }
   }
