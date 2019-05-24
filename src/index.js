@@ -62,7 +62,7 @@ export default function Dragger(props) {
     const Ro = window.ResizeObserver || props.ResizeObserver
     const observer = new Ro(entries => {
       // use the elements ID to determine whether the inner or the outer has been observed
-      const id = entries[0]target.dataset.id
+      const id = entries[0].target.dataset.id
       if (id === 'Dragger-inner') setInnerWidth(entries[0].contentRect.width)
       if (id === 'Dragger-outer') setOuterWidth(entries[0].contentRect.width)
 
