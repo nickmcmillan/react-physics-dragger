@@ -14,22 +14,22 @@ export default function Dragger(props) {
     friction: props.friction || 0.92,
   })
 
-  const [state, setState] = useState({
+  const state = useRef({
     restPositionX: 0,
     isDragging: false,
   })
 
-  const [leftBound, setLeftBound] = useState(0)
-  const [rightBound, setRightBound] = useState(0)
+  const leftBound = useRef(0)
+  const rightBound = useRef(0)
 
   const docStyle = document.documentElement.style
   const [inputType, setInputType] = useState('')
-  const [velocityX, setVelocityX] = useState(0)
-  const [downX, setDownX] = useState(0)
-  const [dragStartPosition, setDragStartPosition] = useState(0)
-  const [nativePosition, setNativePosition] = useState(0) // starting position
-  const [dragPosition, setDragPosition] = useState(nativePosition)
-  const [rafId, setRafId] = useState(null)
+  const velocityX = useRef(0)
+  const downX = useRef(0)
+  const dragStartPosition = useRef(0)
+  const nativePosition = useRef(0) // starting position
+  const dragPosition = useRef(nativePosition.current)
+  const rafId = useRef(null)
 
   const outerEl = useRef(null)
   const innerEl = useRef(null)
@@ -50,8 +50,8 @@ export default function Dragger(props) {
       elClientLeft: outerEl.current.clientLeft,
     })
 
-    setLeftBound(left)
-    setRightBound(right)
+    leftBound.current = left
+    rightBound.current = right
 
     // Update the edge boundaries when the outer element is resized
     // Update the inner width when the children change size
@@ -73,16 +73,16 @@ export default function Dragger(props) {
         elClientLeft: outerEl.current.clientLeft,
       })
 
-      setLeftBound(left)
-      setRightBound(right)
+      leftBound.current = left
+      rightBound.current = right
 
       // broadcast onFrame event on component mount, as well as when the inner or outer elements change size
       if (props.onFrame) {
         props.onFrame({
-          x: roundNum(nativePosition),
+          x: roundNum(nativePosition.current),
           outerWidth: outerWidth.current,
           innerWidth: innerWidth.current,
-          progress: roundNum((nativePosition) / (outerWidth.current - innerWidth.current)),
+          progress: roundNum((nativePosition.current) / (outerWidth.current - innerWidth.current)),
         })
       }
     })
@@ -96,79 +96,79 @@ export default function Dragger(props) {
   }, [props.friction])
 
   const update = () => {
-    setVelocityX(velocityX * settings.friction)
+    velocityX.current *= settings.friction
 
-    if (!state.isDragging && nativePosition < leftBound) {
-      setVelocityX(applyBoundForce({
-        bound: leftBound,
+    if (!state.current.isDragging && nativePosition.current < leftBound.current) {
+      velocityX.current = applyBoundForce({
+        bound: leftBound.current,
         edge: 'left',
-        nativePosition: nativePosition,
+        nativePosition: nativePosition.current,
         friction: settings.friction,
-        velocityX: velocityX,
-      }))
+        velocityX: velocityX.current,
+      })
     }
 
-    if (!state.isDragging && nativePosition > rightBound) {
-      setVelocityX(applyBoundForce({
-        bound: rightBound,
+    if (!state.current.isDragging && nativePosition.current > rightBound.current) {
+      velocityX.current = applyBoundForce({
+        bound: rightBound.current,
         edge: 'right',
-        nativePosition: nativePosition,
+        nativePosition: nativePosition.current,
         friction: settings.friction,
-        velocityX: velocityX,
-      }))
+        velocityX: velocityX.current,
+      })
     }
 
-    setVelocityX(applyDragForce({
-      isDragging: state.isDragging,
-      dragPosition: dragPosition,
-      nativePosition: nativePosition,
-      velocityX: velocityX,
-    }))
+    velocityX.current = applyDragForce({
+      isDragging: state.current.isDragging,
+      dragPosition: dragPosition.current,
+      nativePosition: nativePosition.current,
+      velocityX: velocityX.current,
+    })
 
-    setNativePosition(nativePosition + velocityX)
+    nativePosition.current += velocityX.current
 
-    const isInfinitesimal = roundNum(Math.abs(velocityX)) < 0.001
+    const isInfinitesimal = roundNum(Math.abs(velocityX.current)) < 0.001
 
-    if (!state.isDragging && isInfinitesimal) {
+    if (!state.current.isDragging && isInfinitesimal) {
       // no longer dragging and inertia has stopped
-      window.cancelAnimationFrame(rafId)
-      setState(state => ({ ...state, restPositionX: roundNum(nativePosition) }))
+      window.cancelAnimationFrame(rafId.current)
+      state.current = { ...state.current, restPositionX: roundNum(nativePosition.current) }
     } else {
       // bypass Reacts render method during animation, similar to react-spring
-      draggerRefInner.current.style.transform = `translate3d(${roundNum(nativePosition)}px,0,0)`
-      setRafId(window.requestAnimationFrame(update))
+      draggerRefInner.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
+      rafId.current = window.requestAnimationFrame(update)
     }
 
     if (props.onFrame) {
       props.onFrame({
-        x: roundNum(nativePosition),
+        x: roundNum(nativePosition.current),
         outerWidth: outerWidth.current,
         innerWidth: innerWidth.current,
-        progress: roundNum((nativePosition) / (outerWidth.current - innerWidth.current)),
+        progress: roundNum((nativePosition.current) / (outerWidth.current - innerWidth.current)),
       })
     }
   }
 
   const onMove = (e) => {
     const x = inputType === 'mouse' ? e.pageX : e.touches[0].pageX
-    const moveVector = x - downX
+    const moveVector = x - downX.current
 
     // gradually increase friction as the dragger is pulled beyond bounds
     // credit: https://github.com/metafizzy/flickity/blob/master/dist/flickity.pkgd.js#L2894
-    let dragX = dragStartPosition + moveVector
-    const originBound = Math.max(rightBound, dragStartPosition)
+    let dragX = dragStartPosition.current + moveVector
+    const originBound = Math.max(rightBound.current, dragStartPosition.current)
     dragX = dragX > originBound ? (dragX + originBound) * 0.5 : dragX
-    const endBound = Math.min(leftBound, dragStartPosition)
+    const endBound = Math.min(leftBound.current, dragStartPosition.current)
     dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
 
-    setDragPosition(dragX)
+    dragPosition.current = dragX
   }
 
   const onRelease = (e) => {
-    setState(state => ({ ...state, isDragging: false }))
+    state.current = { ...state.current, isDragging: false }
 
     // onRelease if the slider hasn't dragged sufficiently, classify it as a static click
-    const moveVector = Math.abs(downX - e.pageX)
+    const moveVector = Math.abs(downX.current - e.pageX)
     if (moveVector < 20 && props.onStaticClick) {
       props.onStaticClick(e.target)
     }
@@ -194,17 +194,17 @@ export default function Dragger(props) {
     const mouseButton = e.button
     if (mouseButton && (mouseButton !== 0 && mouseButton !== 1)) return
 
-    setState(state => ({ ...state, isDragging: true }))
-    window.cancelAnimationFrame(rafId) // cancel any existing loop
-    setRafId(window.requestAnimationFrame(update)) // kick off a new loop
+    state.current = { ...state.current, isDragging: true }
+    window.cancelAnimationFrame(rafId.current) // cancel any existing loop
+    rafId.current = window.requestAnimationFrame(update) // kick off a new loop
 
     setInputType(e.type === 'mousedown' ? 'mouse' : 'touch')
 
     // Update html element styles
     docStyle.cursor = 'grabbing'
     docStyle.userSelect = 'none'
-    setDownX(inputType === 'mouse' ? e.pageX : e.touches[0].pageX)
-    setDragStartPosition(nativePosition)
+    downX.current = inputType === 'mouse' ? e.pageX : e.touches[0].pageX
+    dragStartPosition.current = nativePosition.current
 
     onMove(e)
 
@@ -221,7 +221,7 @@ export default function Dragger(props) {
     <div
       data-id='Dragger-outer'
       ref={draggerRefOuter}
-      className={`${styles.outer} ${state.isDragging ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
+      className={`${styles.outer} ${state.current.isDragging ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
       style={{ ...props.style }}
@@ -230,7 +230,7 @@ export default function Dragger(props) {
         data-id='Dragger-inner'
         ref={draggerRefInner}
         className={`${styles.inner} dragger-inner`}
-        style={{ 'transform': `translateX(${state.restPositionX}px)` }}
+        style={{ 'transform': `translateX(${state.current.restPositionX}px)` }}
       >
         {props.children}
       </div>
