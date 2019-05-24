@@ -65,7 +65,7 @@ export default class Dragger extends React.Component {
     const Ro = window.ResizeObserver || this.props.ResizeObserver
     const observer = new Ro(entries => {
       // use the elements ID to determine whether the inner or the outer has been observed
-      const id = entries[0].target.id
+      const id = entries[0].target.dataset.id
       if (id === 'Dragger-inner') this.innerWidth = entries[0].contentRect.width
       if (id === 'Dragger-outer') this.outerWidth = entries[0].contentRect.width
 
@@ -223,7 +223,7 @@ export default class Dragger extends React.Component {
   render() {
     return (
       <div
-        id="Dragger-outer"
+        data-id="Dragger-outer"
         ref={this.draggerRefOuter}
         className={`${styles.outer} ${this.state.isDragging ? styles.isDragging : ''}${this.props.disabled ? ' is-disabled' : ''} ${this.props.className}`}
         onTouchStart={this.onStart}
@@ -231,7 +231,7 @@ export default class Dragger extends React.Component {
         style={{ ...this.props.style }}
       >
         <div
-          id="Dragger-inner"
+          data-id="Dragger-inner"
           ref={this.draggerRefInner}
           className={`${styles.inner} dragger-inner`}
           style={{ 'transform': `translateX(${this.state.restPositionX}px)` }}
