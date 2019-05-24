@@ -67,21 +67,21 @@ export default function Dragger(props) {
       if (id === 'Dragger-outer') setOuterWidth(entries[0].contentRect.width)
 
       const { left, right } = getBoundaries({
-        outerWidth: this.outerWidth,
-        innerWidth: this.innerWidth,
-        elClientLeft: this.outerEl.clientLeft,
+        outerWidth: outerWidth,
+        innerWidth: innerWidth,
+        elClientLeft: outerEl.clientLeft,
       })
 
-      this.leftBound = left
-      this.rightBound = right
+      setLeftBound(left)
+      setRightBound(right)
 
       // broadcast onFrame event on component mount, as well as when the inner or outer elements change size
-      if (this.props.onFrame) {
-        this.props.onFrame({
-          x: roundNum(this.nativePosition),
-          outerWidth: this.outerWidth,
-          innerWidth: this.innerWidth,
-          progress: roundNum((this.nativePosition) / (this.outerWidth - this.innerWidth)),
+      if (props.onFrame) {
+        props.onFrame({
+          x: roundNum(nativePosition),
+          outerWidth: outerWidth,
+          innerWidth: innerWidth,
+          progress: roundNum((nativePosition) / (outerWidth - innerWidth)),
         })
       }
     })
@@ -196,12 +196,12 @@ export default function Dragger(props) {
     setDownX(inputType === 'mouse' ? e.pageX : e.touches[0].pageX)
     setDragStartPosition(nativePosition)
 
-    this.onMove(e)
+    onMove(e)
 
-    if (this.inputType === 'mouse') {
+    if (inputType === 'mouse') {
       window.addEventListener('mousemove', onMove)
       window.addEventListener('mouseup', onRelease)
-    } else if (this.inputType === 'touch') {
+    } else if (inputType === 'touch') {
       window.addEventListener('touchmove', onMove)
       window.addEventListener('touchend', onRelease)
     }
