@@ -62,7 +62,7 @@ export default function Dragger(props) {
     const Ro = window.ResizeObserver || props.ResizeObserver
     const observer = new Ro(entries => {
       // use the elements ID to determine whether the inner or the outer has been observed
-      const id = entries[0].target.id
+      const id = entries[0]target.dataset.id
       if (id === 'Dragger-inner') setInnerWidth(entries[0].contentRect.width)
       if (id === 'Dragger-outer') setOuterWidth(entries[0].contentRect.width)
 
@@ -150,8 +150,17 @@ export default function Dragger(props) {
 
   const onMove = (e) => {
     const x = inputType === 'mouse' ? e.pageX : e.touches[0].pageX
-    const move = x - downX
-    setDragPosition(dragStartPosition + move)
+    const moveVector = x - downX
+
+    // gradually increase friction as the dragger is pulled beyond bounds
+    // credit: https://github.com/metafizzy/flickity/blob/master/dist/flickity.pkgd.js#L2894
+    let dragX = dragStartPosition + moveVector
+    const originBound = Math.max(rightBound, dragStartPosition)
+    dragX = dragX > originBound ? (dragX + originBound) * 0.5 : dragX
+    const endBound = Math.min(leftBound, dragStartPosition)
+    dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
+
+    setDragPosition(dragX)
   }
 
   const onRelease = (e) => {
@@ -223,7 +232,7 @@ export default function Dragger(props) {
         style={{ 'transform': `translateX(${state.restPositionX}px)` }}
       >
         {props.children}
+        </div>
       </div>
-    </div>
   )
 }
