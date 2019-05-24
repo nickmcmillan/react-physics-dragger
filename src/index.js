@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect, useRef, useState } from 'react'
 import { roundNum } from './utils'
 import { applyDragForce, applyBoundForce } from './force'
@@ -30,23 +31,23 @@ export default function Dragger(props) {
   const [dragPosition, setDragPosition] = useState(nativePosition)
   const [rafId, setRafId] = useState(null)
 
-  const [outerEl, setOuterEl] = useState(null)
-  const [innerEl, setInnerEl] = useState(null)
+  const outerEl = useRef(null)
+  const innerEl = useRef(null)
   const [outerWidth, setOuterWidth] = useState(0)
   const [innerWidth, setInnerWidth] = useState(0)
 
   // componentDidMount
   useEffect(() => {
-    setOuterEl(draggerRefOuter.current)
-    setInnerEl(draggerRefInner.current)
+    outerEl.current = draggerRefOuter.current
+    innerEl.current = draggerRefInner.current
     // need to use scrollWidth instead of offsetWidth
-    setOuterWidth(outerEl.scrollWidth)
-    setInnerWidth(innerEl.scrollWidth)
+    setOuterWidth(outerEl.current.scrollWidth)
+    setInnerWidth(innerEl.current.scrollWidth)
 
     const { left, right } = getBoundaries({
       outerWidth: outerWidth,
       innerWidth: innerWidth,
-      elClientLeft: outerEl.clientLeft,
+      elClientLeft: outerEl.current.clientLeft,
     })
 
     setLeftBound(left)
@@ -69,7 +70,7 @@ export default function Dragger(props) {
       const { left, right } = getBoundaries({
         outerWidth: outerWidth,
         innerWidth: innerWidth,
-        elClientLeft: outerEl.clientLeft,
+        elClientLeft: outerEl.current.clientLeft,
       })
 
       setLeftBound(left)
@@ -85,14 +86,14 @@ export default function Dragger(props) {
         })
       }
     })
-    observer.observe(outerEl)
-    observer.observe(innerEl)
+    observer.observe(outerEl.current)
+    observer.observe(innerEl.current)
   }, [])
 
   // componentDidUpdate
   useEffect(() => {
     setSettings({friction: props.friction})
-  }, [props.friction, settings.friction])
+  }, [props.friction])
 
   const update = () => {
     setVelocityX(velocityX * settings.friction)
