@@ -210,7 +210,10 @@ export default function Dragger(props) {
 
     dragStartPosition.current = nativePosition.current
 
-    onMove(downX, true) // needed to set initial mouse position
+    // this initial onMove is needed to set the starting mouse position
+    // this time we're using downX instead of using the captured event.
+    // we notify onMove about this difference using the second argument.
+    onMove(downX, true)
 
     if (inputType === 'mouse') {
       window.addEventListener('mousemove', onMove)
