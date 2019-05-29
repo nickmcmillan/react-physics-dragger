@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 import { roundNum } from './utils'
@@ -8,40 +8,39 @@ import getBoundaries from './getBoundaries'
 import styles from './styles.css'
 
 export default function Dragger(props) {
-  const draggerRefOuter = useRef()
-  const draggerRefInner = useRef()
+
+  const docStyle = document.documentElement.style
 
   const settings = useRef({
     friction: props.friction,
   })
 
-  const state = useRef({
-    restPositionX: 0,
-    isDragging: false,
-  })
+  // DOM element refs
+  const outerEl = useRef(null)
+  const innerEl = useRef(null)
 
+  // Dimensions
+  const outerWidth = useRef(0)
+  const innerWidth = useRef(0)
   const leftBound = useRef(0)
   const rightBound = useRef(0)
 
-  const docStyle = document.documentElement.style
-  const inputType = useRef('')
+  // User input states
+  const isDragging = useRef(false)
+  const inputType = useRef('') // mouse or touch
+
+  // Dragging state
+  const restPositionX = useRef(0)
   const velocityX = useRef(0)
   const downX = useRef(0)
   const dragStartPosition = useRef(0)
   const nativePosition = useRef(0) // starting position
   const dragPosition = useRef(nativePosition.current)
-  const rafId = useRef(null)
 
-  const outerEl = useRef(null)
-  const innerEl = useRef(null)
-  const outerWidth = useRef(0)
-  const innerWidth = useRef(0)
+  const rafId = useRef(null)
 
   // componentDidMount
   useEffect(() => {
-    outerEl.current = draggerRefOuter.current
-    innerEl.current = draggerRefInner.current
-    // need to use scrollWidth instead of offsetWidth
     outerWidth.current = outerEl.current.scrollWidth
     innerWidth.current = innerEl.current.scrollWidth
 
@@ -101,7 +100,7 @@ export default function Dragger(props) {
   const update = () => {
     velocityX.current *= settings.current.friction
 
-    if (!state.current.isDragging && nativePosition.current < leftBound.current) {
+    if (!isDragging.current && nativePosition.current < leftBound.current) {
       velocityX.current = applyBoundForce({
         bound: leftBound.current,
         edge: 'left',
@@ -111,7 +110,7 @@ export default function Dragger(props) {
       })
     }
 
-    if (!state.current.isDragging && nativePosition.current > rightBound.current) {
+    if (!isDragging.current && nativePosition.current > rightBound.current) {
       velocityX.current = applyBoundForce({
         bound: rightBound.current,
         edge: 'right',
@@ -122,7 +121,7 @@ export default function Dragger(props) {
     }
 
     velocityX.current = applyDragForce({
-      isDragging: state.current.isDragging,
+      isDragging: isDragging.current,
       dragPosition: dragPosition.current,
       nativePosition: nativePosition.current,
       velocityX: velocityX.current,
@@ -132,13 +131,13 @@ export default function Dragger(props) {
 
     const isInfinitesimal = roundNum(Math.abs(velocityX.current)) < 0.001
 
-    if (!state.current.isDragging && isInfinitesimal) {
+    if (!isDragging.current && isInfinitesimal) {
       // no longer dragging and inertia has stopped
       window.cancelAnimationFrame(rafId.current)
-      state.current = { ...state.current, restPositionX: roundNum(nativePosition.current) }
+      restPositionX.current = roundNum(nativePosition.current)
     } else {
       // bypass Reacts render method during animation, similar to react-spring
-      draggerRefInner.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
+      innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
       rafId.current = window.requestAnimationFrame(update)
     }
 
@@ -168,9 +167,9 @@ export default function Dragger(props) {
   }
 
   const onRelease = (e) => {
-    state.current = { ...state.current, isDragging: false }
+    isDragging.current = false
 
-    // onRelease if the slider hasn't dragged sufficiently, classify it as a static click
+    // if the slider hasn't dragged sufficiently treat it as a static click
     const moveVector = Math.abs(downX.current - e.pageX)
     if (moveVector < 20 && props.onStaticClick) {
       props.onStaticClick(e.target)
@@ -197,15 +196,17 @@ export default function Dragger(props) {
     const mouseButton = e.button
     if (mouseButton && (mouseButton !== 0 && mouseButton !== 1)) return
 
-    state.current = { ...state.current, isDragging: true }
+    isDragging.current = true
+
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
     rafId.current = window.requestAnimationFrame(update) // kick off a new loop
 
-    inputType.current = (e.type === 'mousedown' ? 'mouse' : 'touch')
-
-    // Update html element styles
+    // Update <html> element styles
     docStyle.cursor = 'grabbing'
     docStyle.userSelect = 'none'
+
+    inputType.current = (e.type === 'mousedown' ? 'mouse' : 'touch')
+
     downX.current = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
     dragStartPosition.current = nativePosition.current
 
@@ -223,17 +224,17 @@ export default function Dragger(props) {
   return (
     <div
       data-id='Dragger-outer'
-      ref={draggerRefOuter}
-      className={`${styles.outer} ${state.current.isDragging ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
+      ref={outerEl}
+      className={`${styles.outer} ${isDragging.current ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
       style={{ ...props.style }}
     >
       <div
         data-id='Dragger-inner'
-        ref={draggerRefInner}
+        ref={innerEl}
         className={`${styles.inner} dragger-inner`}
-        style={{ 'transform': `translateX(${state.current.restPositionX}px)` }}
+        style={{ 'transform': `translateX(${restPositionX.current}px)` }}
       >
         {props.children}
       </div>
