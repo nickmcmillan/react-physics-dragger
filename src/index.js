@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { roundNum } from './utils'
@@ -8,7 +8,6 @@ import getBoundaries from './getBoundaries'
 import styles from './styles.css'
 
 export default function Dragger(props) {
-
   const docStyle = document.documentElement.style
 
   const settings = useRef({
@@ -26,7 +25,8 @@ export default function Dragger(props) {
   const rightBound = useRef(0)
 
   // User input states
-  const isDragging = useRef(false)
+  const isDragging = useRef(false) // doesn't update render
+  const [isDraggingStyle, setIsDraggingStyle] = useState(false) // does update render
   const inputType = useRef('') // mouse or touch
 
   // Dragging state
@@ -168,6 +168,7 @@ export default function Dragger(props) {
 
   const onRelease = (e) => {
     isDragging.current = false
+    setIsDraggingStyle(false)
 
     // if the slider hasn't dragged sufficiently treat it as a static click
     const moveVector = Math.abs(downX.current - e.pageX)
@@ -197,6 +198,7 @@ export default function Dragger(props) {
     if (mouseButton && (mouseButton !== 0 && mouseButton !== 1)) return
 
     isDragging.current = true
+    setIsDraggingStyle(true)
 
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
     rafId.current = window.requestAnimationFrame(update) // kick off a new loop
@@ -225,7 +227,7 @@ export default function Dragger(props) {
     <div
       data-id='Dragger-outer'
       ref={outerEl}
-      className={`${styles.outer} ${isDragging.current ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
+      className={`${styles.outer} ${isDraggingStyle ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
       style={{ ...props.style }}
