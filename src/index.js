@@ -252,7 +252,7 @@ Dragger.propTypes = {
   disabled: PropTypes.bool,
   className: PropTypes.string,
   style: PropTypes.object,
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node,
 }
 
 Dragger.defaultProps = {
