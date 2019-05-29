@@ -198,7 +198,7 @@ export default function Dragger(props) {
     setIsDragging(true)
     setInputType(e.type === 'mousedown' ? 'mouse' : 'touch')
     downX.current = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX
-  }, [])
+  }, [props])
 
   useEffect(() => {
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
