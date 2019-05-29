@@ -29,7 +29,7 @@ export default function Dragger(props) {
   const [inputType, setInputType] = useState('') // mouse or touch
 
   // Dragging state
-  const [downX, setDownX] = useState(0)
+  const downX = useRef(0)
   const restPositionX = useRef(0)
   const velocityX = useRef(0)
   const dragStartPosition = useRef(0)
@@ -152,7 +152,7 @@ export default function Dragger(props) {
 
   const onMove = useCallback((e, mod) => {
     const x = mod ? e : inputType === 'mouse' ? e.pageX : e.touches[0].pageX
-    const moveVector = x - downX
+    const moveVector = x - downX.current
 
     // gradually increase friction as the dragger is pulled beyond bounds
     // credit: https://github.com/metafizzy/flickity/blob/master/dist/flickity.pkgd.js#L2894
@@ -163,13 +163,13 @@ export default function Dragger(props) {
     dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
 
     dragPosition.current = dragX
-  }, [inputType, downX])
+  }, [inputType])
 
   const onRelease = useCallback(e => {
     setIsDragging(false)
 
     // if the slider hasn't dragged sufficiently treat it as a static click
-    const moveVector = Math.abs(downX - e.pageX)
+    const moveVector = Math.abs(downX.current - e.pageX)
     if (moveVector < 20 && props.onStaticClick) {
       props.onStaticClick(e.target)
     }
@@ -197,7 +197,7 @@ export default function Dragger(props) {
 
     setIsDragging(true)
     setInputType(e.type === 'mousedown' ? 'mouse' : 'touch')
-    setDownX(e.type === 'mousedown' ? e.pageX : e.touches[0].pageX)
+    downX.current = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX
   }, [])
 
   useEffect(() => {
@@ -213,7 +213,9 @@ export default function Dragger(props) {
     // this initial onMove is needed to set the starting mouse position
     // this time we're using downX instead of using the captured event.
     // we notify onMove about this difference using the second argument.
-    onMove(downX, true)
+    onMove(downX.current, true)
+
+    if (!isDragging) return
 
     if (inputType === 'mouse') {
       window.addEventListener('mousemove', onMove)
@@ -222,7 +224,7 @@ export default function Dragger(props) {
       window.addEventListener('touchmove', onMove)
       window.addEventListener('touchend', onRelease)
     }
-  }, [isDragging, downX])
+  }, [isDragging])
 
   return (
     <div
