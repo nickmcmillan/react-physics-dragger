@@ -24,7 +24,7 @@ export default function Dragger(props) {
   const rightBound = useRef(0)
 
   const docStyle = document.documentElement.style
-  const [inputType, setInputType] = useState('')
+  const inputType = useRef('')
   const velocityX = useRef(0)
   const downX = useRef(0)
   const dragStartPosition = useRef(0)
@@ -153,7 +153,7 @@ export default function Dragger(props) {
   }
 
   const onMove = (e) => {
-    const x = inputType === 'mouse' ? e.pageX : e.touches[0].pageX
+    const x = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
     const moveVector = x - downX.current
 
     // gradually increase friction as the dragger is pulled beyond bounds
@@ -180,7 +180,7 @@ export default function Dragger(props) {
     docStyle.cursor = ''
     docStyle.userSelect = ''
 
-    if (inputType === 'mouse') {
+    if (inputType.current === 'mouse') {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onRelease)
     } else {
@@ -201,20 +201,20 @@ export default function Dragger(props) {
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
     rafId.current = window.requestAnimationFrame(update) // kick off a new loop
 
-    setInputType(e.type === 'mousedown' ? 'mouse' : 'touch')
+    inputType.current = (e.type === 'mousedown' ? 'mouse' : 'touch')
 
     // Update html element styles
     docStyle.cursor = 'grabbing'
     docStyle.userSelect = 'none'
-    downX.current = inputType === 'mouse' ? e.pageX : e.touches[0].pageX
+    downX.current = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
     dragStartPosition.current = nativePosition.current
 
     onMove(e)
 
-    if (inputType === 'mouse') {
+    if (inputType.current === 'mouse') {
       window.addEventListener('mousemove', onMove)
       window.addEventListener('mouseup', onRelease)
-    } else if (inputType === 'touch') {
+    } else if (inputType.current === 'touch') {
       window.addEventListener('touchmove', onMove)
       window.addEventListener('touchend', onRelease)
     }
