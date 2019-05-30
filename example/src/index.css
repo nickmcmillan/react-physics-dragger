@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Lora');
+
 html {
   box-sizing: border-box;
 }
@@ -18,7 +20,16 @@ body {
 }
 
 h1 {
-  font-size: 1.25rem;
+  font-size: 5vmin;
+  font-family: 'Lora', serif;
+  max-width: 10rem;
+  line-height: 1;
+}
+
+h2 {
+  font-size: 1rem;
+  margin: 0 0 1rem;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .title-bar {
@@ -31,17 +42,11 @@ h1 {
 .title-anchor {
   text-decoration: none;
   color: inherit;
-  display: inline-block;
 }
 
-.title-anchor:hover {
+.title-anchor:hover,
+.title-anchor:focus {
   text-decoration: underline;
-}
-
-h2 {
-  font-size: 1rem;
-  margin: 0 0 2rem;
-  /* font-weight: normal; */
 }
 
 input {
@@ -116,7 +121,6 @@ button.btn:focus {
 .item-standard {
   background-color: #fff;
   outline: 0;
-  border: 0;
   display: inline-block;
   padding: 1rem 2rem;
   border: 2px solid #333;
@@ -138,7 +142,7 @@ button.btn:focus {
   display: inline-block;
 }
 
-.item-img {
+.item-btn {
   overflow: hidden;
   width: 12rem;
   height: 20rem;
@@ -146,20 +150,26 @@ button.btn:focus {
   border: 2px solid #333;
   border-radius: 40px;
   margin: 0 1rem;
+  padding: 0;
 }
+.item-btn:focus {
+  outline: 0;
+}
+
 
 .img {
   width: 150%;
+  height: 100%;
+  object-fit: cover;
   pointer-events: none;
 }
 
-pre {
-  margin-bottom: 2rem;
+.button-group {
+  margin-bottom: 3rem;
 }
 
 @media (min-width: 768px) {
   .button-group {
-    margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
   }

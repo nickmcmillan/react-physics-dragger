@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useLayoutEffect } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
@@ -37,32 +37,31 @@ const items = [
 ]
 
 const Example2 = () => {
-
   const [frame, setFrame] = useState({})
-  
+
   // https://stackoverflow.com/a/54940592/2255980
-  const innerRefArr = Array.from({ length: items.length }, a => useRef(null));
-  const outerRefArr = Array.from({ length: items.length }, a => useRef(null));
-  
-  useEffect(() => {
-    const parallaxFactor = -10
-    innerRefArr.forEach((ref, i) => {
-      const x = (frame.x + outerRefArr[i].current.offsetLeft) / parallaxFactor
-      ref.current.style.transform = `translateX(${x}px)`
-    })
-  }, [frame.x]) // we're only interested in changes to the 'x' value
+  const innerRefArr = Array.from({ length: items.length }, a => useRef(null)) // eslint-disable-line
+  const outerRefArr = Array.from({ length: items.length }, a => useRef(null)) // eslint-disable-line
+
+  useLayoutEffect(
+    () => {
+      const parallaxFactor = -10
+      innerRefArr.forEach((ref, i) => {
+        const x = (frame.x + outerRefArr[i].current.offsetLeft) / parallaxFactor
+        ref.current.style.transform = `translateX(${x}px)`
+      })
+    },
+    [frame.x, innerRefArr, outerRefArr]
+  )
 
   return (
     <section className="section">
-      <h2>Using the onFrame callback</h2>
-      <p>Use this to access values on each frame. You could use these values to achieve a parallax effect.</p>
-
-      <pre>
-        outerWidth: {frame.outerWidth}px<br />
-        innerWidth: {frame.innerWidth}px<br />
-        x: {frame.x}px<br />
-        progress: {frame.progress} <br />
-      </pre>
+      <h2>onFrame</h2>
+      <p>
+        onFrame is fired when the dragger is moved (and also once on mount). It
+        provides the values printed below. You could use these to achieve some
+        creative effects such as parallax;
+      </p>
 
       <Dragger
         ResizeObserver={ResizeObserver}
@@ -70,12 +69,21 @@ const Example2 = () => {
         className="dragger"
       >
         {items.map((item, i) => (
-          <div className="item-img" key={item.id} ref={outerRefArr[i]}>
+          <div className="item-btn" key={item.id} ref={outerRefArr[i]}>
             <img className="img" ref={innerRefArr[i]} src={item.src} alt="" />
           </div>
         ))}
       </Dragger>
 
+      <pre>
+        outerWidth: {frame.outerWidth}px
+        <br />
+        innerWidth: {frame.innerWidth}px
+        <br />
+        x: {frame.x}px
+        <br />
+        progress: {frame.progress} <br />
+      </pre>
     </section>
   )
 }
