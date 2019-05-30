@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { roundNum } from './utils'
@@ -25,13 +25,14 @@ export default function Dragger(props) {
   const rightBound = useRef(0)
 
   // User input states
-  const [isDragging, setIsDragging] = useState(false) // does update render
-  const [inputType, setInputType] = useState('') // mouse or touch
+  const isDragging = useRef(false) // doesn't update render
+  const [isDraggingStyle, setIsDraggingStyle] = useState(false) // does update render
+  const inputType = useRef('') // mouse or touch
 
   // Dragging state
-  const downX = useRef(0)
   const restPositionX = useRef(0)
   const velocityX = useRef(0)
+  const downX = useRef(0)
   const dragStartPosition = useRef(0)
   const nativePosition = useRef(0) // starting position
   const dragPosition = useRef(nativePosition.current)
@@ -96,10 +97,10 @@ export default function Dragger(props) {
     }
   }, [props.friction])
 
-  const update = useCallback(() => {
+  const update = () => {
     velocityX.current *= settings.current.friction
 
-    if (!isDragging && nativePosition.current < leftBound.current) {
+    if (!isDragging.current && nativePosition.current < leftBound.current) {
       velocityX.current = applyBoundForce({
         bound: leftBound.current,
         edge: 'left',
@@ -109,7 +110,7 @@ export default function Dragger(props) {
       })
     }
 
-    if (!isDragging && nativePosition.current > rightBound.current) {
+    if (!isDragging.current && nativePosition.current > rightBound.current) {
       velocityX.current = applyBoundForce({
         bound: rightBound.current,
         edge: 'right',
@@ -120,7 +121,7 @@ export default function Dragger(props) {
     }
 
     velocityX.current = applyDragForce({
-      isDragging,
+      isDragging: isDragging.current,
       dragPosition: dragPosition.current,
       nativePosition: nativePosition.current,
       velocityX: velocityX.current,
@@ -130,7 +131,7 @@ export default function Dragger(props) {
 
     const isInfinitesimal = roundNum(Math.abs(velocityX.current)) < 0.001
 
-    if (!isDragging && isInfinitesimal) {
+    if (!isDragging.current && isInfinitesimal) {
       // no longer dragging and inertia has stopped
       window.cancelAnimationFrame(rafId.current)
       restPositionX.current = roundNum(nativePosition.current)
@@ -148,10 +149,10 @@ export default function Dragger(props) {
         progress: roundNum((nativePosition.current) / (outerWidth.current - innerWidth.current)),
       })
     }
-  }, [isDragging])
+  }
 
-  const onMove = useCallback((e, mod) => {
-    const x = mod ? e : inputType === 'mouse' ? e.pageX : e.touches[0].pageX
+  const onMove = (e) => {
+    const x = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
     const moveVector = x - downX.current
 
     // gradually increase friction as the dragger is pulled beyond bounds
@@ -163,10 +164,11 @@ export default function Dragger(props) {
     dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
 
     dragPosition.current = dragX
-  }, [inputType])
+  }
 
-  const onRelease = useCallback(e => {
-    setIsDragging(false)
+  const onRelease = (e) => {
+    isDragging.current = false
+    setIsDraggingStyle(false)
 
     // if the slider hasn't dragged sufficiently treat it as a static click
     const moveVector = Math.abs(downX.current - e.pageX)
@@ -178,16 +180,16 @@ export default function Dragger(props) {
     docStyle.cursor = ''
     docStyle.userSelect = ''
 
-    if (inputType === 'mouse') {
+    if (inputType.current === 'mouse') {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onRelease)
     } else {
       window.removeEventListener('touchmove', onMove)
       window.removeEventListener('touchend', onRelease)
     }
-  }, [])
+  }
 
-  const onStart = useCallback(e => {
+  const onStart = (e) => {
     if (props.disabled) return
 
     // dismiss clicks from right or middle buttons
@@ -195,12 +197,9 @@ export default function Dragger(props) {
     const mouseButton = e.button
     if (mouseButton && (mouseButton !== 0 && mouseButton !== 1)) return
 
-    setIsDragging(true)
-    setInputType(e.type === 'mousedown' ? 'mouse' : 'touch')
-    downX.current = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX
-  }, [props])
+    isDragging.current = true
+    setIsDraggingStyle(true)
 
-  useEffect(() => {
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
     rafId.current = window.requestAnimationFrame(update) // kick off a new loop
 
@@ -208,29 +207,28 @@ export default function Dragger(props) {
     docStyle.cursor = 'grabbing'
     docStyle.userSelect = 'none'
 
+    inputType.current = (e.type === 'mousedown' ? 'mouse' : 'touch')
+
+    downX.current = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
     dragStartPosition.current = nativePosition.current
 
-    // this initial onMove is needed to set the starting mouse position
-    // this time we're using downX instead of using the captured event.
-    // we notify onMove about this difference using the second argument.
-    onMove(downX.current, true)
+    // initial onMove needed to set the starting mouse position
+    onMove(e)
 
-    if (!isDragging) return
-
-    if (inputType === 'mouse') {
+    if (inputType.current === 'mouse') {
       window.addEventListener('mousemove', onMove)
       window.addEventListener('mouseup', onRelease)
-    } else if (inputType === 'touch') {
+    } else if (inputType.current === 'touch') {
       window.addEventListener('touchmove', onMove)
       window.addEventListener('touchend', onRelease)
     }
-  }, [isDragging])
+  }
 
   return (
     <div
       data-id='Dragger-outer'
       ref={outerEl}
-      className={`${styles.outer} ${isDragging ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
+      className={`${styles.outer} ${isDraggingStyle ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
       style={{ ...props.style }}
