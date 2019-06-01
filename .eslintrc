@@ -1,26 +1,32 @@
 {
-  "parser": "babel-eslint",
-  "extends": [
-    "standard",
-    "standard-react"
-  ],
-  "env": {
-    "es6": true
-  },
-  "plugins": [
-    "react"
-  ],
-  "parserOptions": {
-    "sourceType": "module"
-  },
-  "rules": {
-    // don't force es6 functions to include space before paren
-    "space-before-function-paren": 0,
-
-    // allow specifying true explicitly for boolean props
-    "react/jsx-boolean-value": 0,
-
-    // allow comma-dangle in multiline objects & arrays
-    "comma-dangle": ["error", "only-multiline"]
-  }
-}
+   "parser": "@typescript-eslint/parser",
+   "extends": [
+     "standard",
+     "standard-react",
+     "plugin:@typescript-eslint/recommended"
+   ],
+   "env": {
+     "es6": true
+   },
+   "plugins": [
+     "react",
+     "@typescript-eslint"
+   ],
+   "parserOptions": {
+     "sourceType": "module"
+   },
+   "rules": {
+     "space-before-function-paren": 0,
+     "react/jsx-boolean-value": 0,
+     "@typescript-eslint/explicit-function-return-type": "off",
+     "@typescript-eslint/explicit-member-accessibility": "off",
+     "@typescript-eslint/member-ordering": "error",
+     "@typescript-eslint/no-explicit-any": "off",
+     "@typescript-eslint/no-unused-vars": "off",
+     "@typescript-eslint/prefer-interface": "off",
+     "react/jsx-indent": "off",
+     "react/jsx-indent-props": "off",
+     "@typescript-eslint/no-var-requires": "off"
+   }
+ }
+ 
