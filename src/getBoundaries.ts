@@ -4,9 +4,9 @@ interface BoundaryVariables {
     elClientLeft: number;
 }
 export default ({ outerWidth, innerWidth, elClientLeft }: BoundaryVariables): { left: number; right: number } => {
-    const innerIsLessThanOuter = innerWidth < outerWidth
-    const leftEdge = elClientLeft
-    const rightEdge = -innerWidth + outerWidth
+    const innerIsLessThanOuter: boolean = innerWidth < outerWidth
+    const leftEdge: number = elClientLeft
+    const rightEdge: number = -innerWidth + outerWidth
 
     return {
         left: innerIsLessThanOuter ? leftEdge : rightEdge,
