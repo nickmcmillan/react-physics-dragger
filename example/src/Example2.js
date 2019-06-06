@@ -55,7 +55,7 @@ const Example2 = () => {
   )
 
   return (
-    <section className="section">
+    <section className='section'>
       <h2>onFrame</h2>
       <p>
         onFrame is fired when the dragger is moved (and also once on mount). It
@@ -66,11 +66,11 @@ const Example2 = () => {
       <Dragger
         ResizeObserver={ResizeObserver}
         onFrame={frame => setFrame(frame)}
-        className="dragger"
+        className='dragger'
       >
         {items.map((item, i) => (
-          <div className="item-btn" key={item.id} ref={outerRefArr[i]}>
-            <img className="img" ref={innerRefArr[i]} src={item.src} alt="" />
+          <div className='item-btn' key={item.id} ref={outerRefArr[i]}>
+            <img className='img' ref={innerRefArr[i]} src={item.src} alt='' />
           </div>
         ))}
       </Dragger>

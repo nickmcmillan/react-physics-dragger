@@ -1,20 +1,20 @@
-import React from "react";
+import React from 'react'
 
-import Example1 from "./Example1";
-import Example2 from "./Example2";
-import Example3 from "./Example3";
+import Example1 from './Example1'
+import Example2 from './Example2'
+import Example3 from './Example3'
 
 const App = () => {
   return (
-    <div className="container">
-      <div className="title-bar">
+    <div className='container'>
+      <div className='title-bar'>
         <h1>React Physics Dragger</h1>
 
         <a
-          href="https://github.com/nickmcmillan/react-physics-dragger"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="title-anchor"
+          href='https://github.com/nickmcmillan/react-physics-dragger'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='title-anchor'
         >
           Github
         </a>
@@ -29,7 +29,7 @@ const App = () => {
         graphic novels by Bryan Lee O'Malley.
       </small>
     </div>
-  );
-};
+  )
+}
 
-export default App;
+export default App
