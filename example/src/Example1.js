@@ -8,10 +8,10 @@ const evilExes = [
   'Todd Ingram',
   'Roxanne "Roxie" Richter',
   'Kyle & Ken Katayanagi',
-  'Gideon Gordon Graves'
+  'Gideon Gordon Graves',
 ]
 
-const Example2 = () => {
+const Example1 = () => {
   const [items, setItems] = useState([...evilExes])
   const [isDisabled, setIsDisabled] = useState(false)
   const [friction, setFriction] = useState(0.9)
@@ -29,14 +29,12 @@ const Example2 = () => {
         }}
       >
         {items.map((item, i) => (
-          <button className='item-standard' key={`${item}-${i}`}>
-            {item}
-          </button>
+          <button className="item-standard" key={`${item}-${i}`}>{item}</button>
         ))}
       </Dragger>
 
-      <div className='button-group'>
-        <button className='btn' onClick={() => setIsDisabled(!isDisabled)}>
+      <div className="button-group">
+        <button className="btn" onClick={() => setIsDisabled(!isDisabled)}>
           {isDisabled ? 'Dragger is disabled' : 'Dragger is enabled'}
         </button>
         <button
@@ -90,4 +88,4 @@ const Example2 = () => {
   )
 }
 
-export default Example2
+export default Example1
