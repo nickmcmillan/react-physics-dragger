@@ -8,5 +8,5 @@ node_js:
 install:
   - yarn install
 script:
-  # - yarn run lint
+  - yarn run lintJs
   - yarn test
