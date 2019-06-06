@@ -29,12 +29,12 @@ const Example1 = () => {
         }}
       >
         {items.map((item, i) => (
-          <button className="item-standard" key={`${item}-${i}`}>{item}</button>
+          <button className='item-standard' key={`${item}-${i}`}>{item}</button>
         ))}
       </Dragger>
 
-      <div className="button-group">
-        <button className="btn" onClick={() => setIsDisabled(!isDisabled)}>
+      <div className='button-group'>
+        <button className='btn' onClick={() => setIsDisabled(!isDisabled)}>
           {isDisabled ? 'Dragger is disabled' : 'Dragger is enabled'}
         </button>
         <button

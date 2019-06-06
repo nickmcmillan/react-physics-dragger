@@ -69,8 +69,8 @@ const Example2 = () => {
         className='dragger'
       >
         {items.map((item, i) => (
-          <div className="item-img" key={item.id} ref={outerRefArr[i]}>
-            <img className="img" ref={innerRefArr[i]} src={item.src} alt="" />
+          <div className='item-img' key={item.id} ref={outerRefArr[i]}>
+            <img className='img' ref={innerRefArr[i]} src={item.src} alt='' />
           </div>
         ))}
       </Dragger>
