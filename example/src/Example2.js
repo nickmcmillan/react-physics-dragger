@@ -69,7 +69,7 @@ const Example2 = () => {
         className="dragger"
       >
         {items.map((item, i) => (
-          <div className="item-btn" key={item.id} ref={outerRefArr[i]}>
+          <div className="item-img" key={item.id} ref={outerRefArr[i]}>
             <img className="img" ref={innerRefArr[i]} src={item.src} alt="" />
           </div>
         ))}
