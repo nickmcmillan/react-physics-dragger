@@ -29,3 +29,9 @@ export function applyBoundForce({ bound, edge, nativePosition, friction, velocit
     return applyForce({ velocityX, force })
   }
 }
+
+export function moveToPosition({ position, nativePosition, friction, velocityX }) {
+  const distance = position - nativePosition
+  const force = distance * (1 - friction) - velocityX
+  return applyForce({ velocityX, force })
+}

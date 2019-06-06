@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { roundNum } from './utils'
-import { applyDragForce, applyBoundForce } from './force'
+import { applyDragForce, applyBoundForce, moveToPosition } from './force'
 import getBoundaries from './getBoundaries'
 
 import styles from './styles.css'
@@ -88,6 +88,12 @@ export default function Dragger(props) {
     })
     observer.observe(outerEl.current)
     observer.observe(innerEl.current)
+
+    if (props.draggerRef) {
+      props.draggerRef({
+        setPosition,
+      })
+    }
   }, [])
 
   // componentDidUpdate
@@ -222,6 +228,43 @@ export default function Dragger(props) {
       window.addEventListener('touchmove', onMove)
       window.addEventListener('touchend', onRelease)
     }
+  }
+
+  function forceUpdateLoop() {
+    velocityX.current = moveToPosition({
+      position: dragPosition.current,
+      nativePosition: nativePosition.current,
+      friction: settings.current.friction,
+      velocityX: velocityX.current,
+    })
+
+    nativePosition.current += velocityX.current
+
+    const isInfinitesimal = roundNum(Math.abs(velocityX.current)) < 0.001
+
+    if (isInfinitesimal) {
+      window.cancelAnimationFrame(rafId.current)
+      restPositionX.current = roundNum(nativePosition.current)
+    } else {
+      // bypass Reacts render method during animation, similar to react-spring
+      innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
+      rafId.current = window.requestAnimationFrame(forceUpdateLoop)
+    }
+
+    if (props.onFrame) {
+      props.onFrame({
+        x: roundNum(nativePosition.current),
+        outerWidth: outerWidth.current,
+        innerWidth: innerWidth.current,
+        progress: roundNum((nativePosition.current) / (outerWidth.current - innerWidth.current)),
+      })
+    }
+  }
+
+  const setPosition = (position) => {
+    dragPosition.current = position
+    window.cancelAnimationFrame(rafId.current) // cancel any existing loop
+    rafId.current = window.requestAnimationFrame(forceUpdateLoop) // kick off a new loop
   }
 
   return (

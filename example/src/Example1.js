@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
@@ -13,17 +13,27 @@ const evilExes = [
 
 const Example1 = () => {
   const [items, setItems] = useState([...evilExes])
+  const [frame, setFrame] = useState({})
   const [isDisabled, setIsDisabled] = useState(false)
   const [friction, setFriction] = useState(0.9)
   const [clickedItem, setClickedItem] = useState(null)
+  const [position, setPosition] = useState(null)
+
+  const draggerRef = useRef(null)
+  useEffect(() => {
+    if (!draggerRef.current) return
+    draggerRef.current.setPosition(position)
+  }, [position, draggerRef.current])
 
   return (
     <section className="section">
       <Dragger
+        draggerRef={r => draggerRef.current = r}
         disabled={isDisabled}
         ResizeObserver={ResizeObserver}
         friction={friction}
         className="dragger"
+        onFrame={frame => setFrame(frame)}
         onStaticClick={el => {
           if (el.nodeName === 'BUTTON') setClickedItem(el.textContent)
         }}
@@ -59,6 +69,18 @@ const Example1 = () => {
           }}
         >
           Remove item
+        </button>
+        <button
+          className="btn"
+          onClick={() => setPosition(frame.x - 200)}
+        >
+          -200px
+        </button>
+        <button
+          className="btn"
+          onClick={() => setPosition(frame.x + 200)}
+        >
+          +200px
         </button>
         <div className="btn">
           <label htmlFor="friction">Friction: </label>
