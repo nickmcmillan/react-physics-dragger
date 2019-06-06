@@ -24,15 +24,15 @@ const Example2 = () => {
   )
 
   return (
-    <section className="section">
+    <section className='section'>
       <p>Or you could use onFrame to change other CSS properties...</p>
 
       <Dragger
         ResizeObserver={ResizeObserver}
         onFrame={frame => setFrame(frame)}
-        className="dragger dragger--full"
+        className='dragger dragger--full'
       >
-        <div className="item-standard" ref={ref}>
+        <div className='item-standard' ref={ref}>
           You once were a ve-gone, but now... you will be gone →
         </div>
       </Dragger>

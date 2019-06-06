@@ -6,21 +6,20 @@ import Example3 from './Example3'
 
 const App = () => {
   return (
-    <div className="container">
+    <div className='container'>
 
-      <div className="title-bar">
+      <div className='title-bar'>
         <h1>
           <a
-            href="https://github.com/nickmcmillan/react-physics-dragger"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="title-anchor"
+            href='https://github.com/nickmcmillan/react-physics-dragger'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='title-anchor'
           >
             React Physics Dragger
           </a>
         </h1>
       </div>
-
 
       <Example1 />
       <Example2 />
