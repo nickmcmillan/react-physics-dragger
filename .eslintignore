@@ -2,3 +2,5 @@
 
 # Ignore built files
 dist/*
+
+rollup.config.js
