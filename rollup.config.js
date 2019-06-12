@@ -12,7 +12,7 @@ const includePathOptions = {
     include: {},
     paths: ['src/lib', 'src/other'],
     external: [],
-    extensions: ['.js', '.json', '.html', '.ts', '.tsx']
+    extensions: ['.js', '.json', '.html', '.ts', '.tsx', '.css']
 }
 
 export default {
