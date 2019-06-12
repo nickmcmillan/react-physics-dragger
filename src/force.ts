@@ -12,11 +12,11 @@ interface DragForce {
 }
 
 export const applyDragForce = ({ isDragging, dragPosition, nativePosition, velocityX }: DragForce): number => {
-    if (!isDragging) return velocityX
+  if (!isDragging) return velocityX
 
-    const dragVelocity: number = dragPosition - nativePosition
-    const dragForce: number = dragVelocity - velocityX
-    return velocityX + dragForce
+  const dragVelocity: number = dragPosition - nativePosition
+  const dragForce: number = dragVelocity - velocityX
+  return velocityX + dragForce
 }
 
 interface BoundForce {
@@ -28,17 +28,17 @@ interface BoundForce {
 }
 
 export const applyBoundForce = ({ bound, edge, nativePosition, friction, velocityX }: BoundForce): number => {
-    // bouncing past bound
-    const distance: number = bound - nativePosition
-    let force: number = distance * (1 - friction)
-    // calculate resting position with this force
-    const rest: number = nativePosition + (velocityX + force) / (1 - friction)
-    // apply force if resting position is out of bounds
-    if ((edge === 'right' && rest > bound) || (edge === 'left' && rest < bound)) {
-        return applyForce({ velocityX, force })
-    } else {
-        // if in bounds, apply force to align at bounds
-        force = distance * (1 - friction) - velocityX
-        return applyForce({ velocityX, force })
-    }
+  // bouncing past bound
+  const distance: number = bound - nativePosition
+  let force: number = distance * (1 - friction)
+  // calculate resting position with this force
+  const rest: number = nativePosition + (velocityX + force) / (1 - friction)
+  // apply force if resting position is out of bounds
+  if ((edge === 'right' && rest > bound) || (edge === 'left' && rest < bound)) {
+    return applyForce({ velocityX, force })
+  } else {
+  // if in bounds, apply force to align at bounds
+    force = distance * (1 - friction) - velocityX
+    return applyForce({ velocityX, force })
+  }
 }
