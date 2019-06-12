@@ -8,40 +8,37 @@ const evilExes = [
   'Todd Ingram',
   'Roxanne "Roxie" Richter',
   'Kyle & Ken Katayanagi',
-  'Gideon Gordon Graves'
+  'Gideon Gordon Graves',
 ]
 
-const Example2 = () => {
+const Example1 = () => {
   const [items, setItems] = useState([...evilExes])
   const [isDisabled, setIsDisabled] = useState(false)
   const [friction, setFriction] = useState(0.9)
   const [clickedItem, setClickedItem] = useState(null)
 
   return (
-    <section className="section">
+    <section className='section'>
       <Dragger
         disabled={isDisabled}
         ResizeObserver={ResizeObserver}
         friction={friction}
-        className="dragger"
+        className='dragger'
         onStaticClick={el => {
-
           if (el.nodeName === 'BUTTON') setClickedItem(el.textContent)
         }}
       >
         {items.map((item, i) => (
-          <button className="item-standard" key={`${item}-${i}`}>
-            {item}
-          </button>
+          <button className='item-standard' key={`${item}-${i}`}>{item}</button>
         ))}
       </Dragger>
 
-      <div className="button-group">
-        <button className="btn" onClick={() => setIsDisabled(!isDisabled)}>
-          {isDisabled ? "Dragger is disabled" : "Dragger is enabled"}
+      <div className='button-group'>
+        <button className='btn' onClick={() => setIsDisabled(!isDisabled)}>
+          {isDisabled ? 'Dragger is disabled' : 'Dragger is enabled'}
         </button>
         <button
-          className="btn"
+          className='btn'
           onClick={() => {
             // Add one item to the end of the items list. Pick randomly from original array
             const updatedItems = [
@@ -54,7 +51,7 @@ const Example2 = () => {
           Add item
         </button>
         <button
-          className="btn"
+          className='btn'
           onClick={() => {
             // Remove one item from the end of the array
             const updatedItems = items.slice(0, items.length - 1)
@@ -63,18 +60,18 @@ const Example2 = () => {
         >
           Remove item
         </button>
-        <div className="btn">
-          <label htmlFor="friction">Friction: </label>
+        <div className='btn'>
+          <label htmlFor='friction'>Friction: </label>
           <input
-            id="friction"
-            type="range"
+            id='friction'
+            type='range'
             onChange={e => setFriction(e.currentTarget.value)}
             value={friction}
-            min="0.8"
-            max="0.95"
-            step="0.01"
+            min='0.8'
+            max='0.95'
+            step='0.01'
           />
-          <span className="sub"> {friction}</span>
+          <span className='sub'> {friction}</span>
         </div>
       </div>
 
@@ -91,4 +88,4 @@ const Example2 = () => {
   )
 }
 
-export default Example2
+export default Example1

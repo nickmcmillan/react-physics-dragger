@@ -142,7 +142,7 @@ button.btn:focus {
   display: inline-block;
 }
 
-.item-btn {
+.item-img {
   overflow: hidden;
   width: 12rem;
   height: 20rem;
@@ -152,7 +152,7 @@ button.btn:focus {
   margin: 0 1rem;
   padding: 0;
 }
-.item-btn:focus {
+.item-img:focus {
   outline: 0;
 }
 
