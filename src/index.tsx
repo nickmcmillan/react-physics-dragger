@@ -254,7 +254,7 @@ export default function Dragger(props: Props): JSX.Element {
         : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
-      style={{ ...props.style }}>
+      style={props.style}>
       <div
         data-id='Dragger-inner'
         ref={innerEl}
