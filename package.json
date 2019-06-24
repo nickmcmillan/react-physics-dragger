@@ -15,7 +15,7 @@
   "scripts": {
     "test": "cross-env CI=1 react-scripts-ts test --env=jsdom",
     "test:watch": "react-scripts-ts test --env=jsdom",
-    "lintJs": "eslint '**/*.{js,jsx,ts,tsx}'",
+    "lintJs": "yarn run test",
     "build": "rollup -c",
     "start": "rollup -c -w",
     "prepare": "yarn run build",
