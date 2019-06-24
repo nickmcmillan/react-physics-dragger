@@ -1,35 +1,47 @@
-// eslint-disable-next-line
-import React, { useEffect, useRef, useState, MouseEvent, RefObject, ReactNode } from 'react'
+import React, { useState, useEffect, useRef, MouseEvent, ReactNode, RefObject, MutableRefObject } from 'react'
 
 import { roundNum } from './utils'
 import { applyDragForce, applyBoundForce } from './force'
 import getBoundaries from './getBoundaries'
-// TypeScript does not like using the import statement for non js/ts files
-const styles = require('./styles.css')
 
-type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number };
+import styles from './styles.css'
+
+type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number }
 interface Props {
-    friction: number;
-    ResizeObserver: boolean;
-    onFrame: (args: onFrameParams) => void;
-    onStaticClick: (e: EventTarget | MouseEvent<any>) => void;
-    disabled: boolean;
-    className: string;
-    style: any;
-    children: ReactNode | JSX.Element;
+  friction: number
+  ResizeObserver: boolean
+  onFrame: (args: onFrameParams) => void
+  onStaticClick: (e: EventTarget | MouseEvent<any>) => void
+  disabled: boolean
+  className: string
+  style: any
+  children: ReactNode | JSX.Element
 }
 
-// address 'any' typing
-type reactRef = string | ((instance: HTMLDivElement | null) => void) | RefObject<HTMLDivElement> | null | undefined | any;
+interface DefaultProps {
+  friction?: number
+  disabled?: boolean
+}
 
-export default function Dragger(props: Props): JSX.Element {
+const defaultProps: DefaultProps = {
+  friction: 0.92,
+  disabled: false,
+}
+
+type PropsWithDefaults = Props & DefaultProps
+
+// address 'any' typing
+type reactRef = string | ((instance: HTMLDivElement | null) => void) | RefObject<HTMLDivElement> | null | undefined | any
+
+const Dragger: React.FC<PropsWithDefaults> = props => {
+
   const docStyle = document.documentElement.style
 
-  const settings: React.MutableRefObject<{
-        friction: number;
-    }> = useRef({
-      friction: props.friction
-    })
+  const settings: MutableRefObject<{
+    friction: number
+  }> = useRef({
+    friction: props.friction
+  })
 
   // DOM element refs
   const outerEl: reactRef = useRef(null)
@@ -73,11 +85,11 @@ export default function Dragger(props: Props): JSX.Element {
     // Update the edge boundaries when the outer element is resized
     // Update the inner width when the children change size
     // Check first if ResizeObserver is available on the window or if a polyfill is supplied by the user via props
-    if (!window.ResizeObserver && !props.ResizeObserver) {
+    if ((window as any).ResizeObserver && !props.ResizeObserver) {
       throw new Error('No ResizeObserver is available. Please check the docs for instructions on how to add a polyfill.')
     }
 
-    const Ro = window.ResizeObserver || props.ResizeObserver
+    const Ro = (window as any).ResizeObserver || props.ResizeObserver
     // address the 'any' typing of entries
     const observer = new Ro((entries: any[]) => {
       // use the elements ID to determine whether the inner or the outer has been observed
@@ -109,14 +121,11 @@ export default function Dragger(props: Props): JSX.Element {
   }, [])
 
   // componentDidUpdate
-  useEffect(
-    () => {
-      if (props.friction) {
-        settings.current = { friction: props.friction }
-      }
-    },
-    [props.friction]
-  )
+  useEffect(() => {
+    if (props.friction) {
+      settings.current = { friction: props.friction }
+    }
+  }, [props.friction])
 
   const update = (): void => {
     velocityX.current *= settings.current.friction
@@ -249,24 +258,23 @@ export default function Dragger(props: Props): JSX.Element {
     <div
       data-id='Dragger-outer'
       ref={outerEl}
-      className={`${styles.outer} ${isDraggingStyle ? styles.isDragging : ''}${props.disabled
-        ? ' is-disabled'
-        : ''} ${props.className}`}
+      className={`${styles.outer} ${isDraggingStyle ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
-      style={props.style}>
+      style={props.style}
+    >
       <div
         data-id='Dragger-inner'
         ref={innerEl}
         className={`${styles.inner} dragger-inner`}
-        style={{ transform: `translateX(${restPositionX.current}px)` }}>
+        style={{ transform: `translateX(${restPositionX.current}px)` }}
+      >
         {props.children}
       </div>
     </div>
   )
 }
 
-Dragger.defaultProps = {
-  friction: 0.92,
-  disabled: false
-}
+Dragger.defaultProps = defaultProps
+
+export default Dragger
