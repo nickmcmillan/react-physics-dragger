@@ -8,5 +8,4 @@ node_js:
 install:
   - yarn install
 script:
-  - yarn run lintJs
   - yarn test
