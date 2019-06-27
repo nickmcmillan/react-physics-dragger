@@ -261,8 +261,16 @@ export default function Dragger(props) {
     }
   }
 
-  const setPosition = (position) => {
-    dragPosition.current = position
+  function setPosition(position) {
+    if (position < leftBound.current) {
+      // push to right bound
+      dragPosition.current = leftBound.current
+    } else if (position > rightBound.current) {
+      // push to left bound
+      dragPosition.current = rightBound.current
+    } else {
+      dragPosition.current = position
+    }
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
     rafId.current = window.requestAnimationFrame(forceUpdateLoop) // kick off a new loop
   }
