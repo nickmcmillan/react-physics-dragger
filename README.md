@@ -48,11 +48,6 @@ const App = () => {
 }
 ```
 
-## Todo: 
-- [ ] Tests!
-- [ ] Maybe convert it to hooks?
-- [ ] Could it work with sideways mouse scrolling?
-
 
 ## Acknowledgements
 Inspired by [Dave DeSandro's](https://twitter.com/desandro) work on Practical UI Physics; 
