@@ -1,6 +1,6 @@
-import ExampleComponent from './'
+import ExampleComponent from '.'
 
-describe('ExampleComponent', () => {
+describe('ExampleComponent', (): void => {
   it('is truthy', () => {
     expect(ExampleComponent).toBeTruthy()
   })
