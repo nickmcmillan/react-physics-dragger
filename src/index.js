@@ -269,6 +269,7 @@ export default function Dragger(props) {
       // push to left bound
       dragPosition.current = rightBound.current
     } else {
+      // otherwise just nudget the carousel to the specified position
       dragPosition.current = position
     }
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
