@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
-import PropTypes from 'prop-types'
+import React, { useState, useEffect, useRef, MouseEvent, ReactNode, RefObject, MutableRefObject } from 'react'
 
 import { roundNum } from './utils'
 import { applyDragForce, applyBoundForce, moveToPosition } from './force'
@@ -7,47 +6,77 @@ import getBoundaries from './getBoundaries'
 
 import styles from './styles.css'
 
-export default function Dragger(props) {
+type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number }
+interface Props {
+  friction: number
+  ResizeObserver: boolean
+  onFrame: (args: onFrameParams) => void
+  onStaticClick: (e: EventTarget | MouseEvent<any>) => void
+  disabled: boolean
+  className: string
+  style: any
+  children: ReactNode | JSX.Element
+}
+
+interface DefaultProps {
+  friction?: number
+  disabled?: boolean
+}
+
+const defaultProps: DefaultProps = {
+  friction: 0.92,
+  disabled: false,
+}
+
+type PropsWithDefaults = Props & DefaultProps
+
+// address 'any' typing
+type reactRef = string | ((instance: HTMLDivElement | null) => void) | RefObject<HTMLDivElement> | null | undefined | any
+
+const Dragger: React.FC<PropsWithDefaults> = props => {
+
   const docStyle = document.documentElement.style
 
-  const settings = useRef({
-    friction: props.friction,
+  const settings: MutableRefObject<{
+    friction: number
+  }> = useRef({
+    friction: props.friction
   })
 
   // DOM element refs
-  const outerEl = useRef(null)
-  const innerEl = useRef(null)
+  const outerEl: reactRef = useRef(null)
+  const innerEl: reactRef = useRef(null)
 
   // Dimensions
-  const outerWidth = useRef(0)
-  const innerWidth = useRef(0)
-  const leftBound = useRef(0)
-  const rightBound = useRef(0)
+  const outerWidth: reactRef = useRef(0)
+  const innerWidth: reactRef = useRef(0)
+  const leftBound: reactRef = useRef(0)
+  const rightBound: reactRef = useRef(0)
 
   // User input states
-  const isDragging = useRef(false) // doesn't update render
-  const [isDraggingStyle, setIsDraggingStyle] = useState(false) // does update render
-  const inputType = useRef('') // mouse or touch
+  const isDragging: reactRef = useRef(false) // doesn't update render
+  const [isDraggingStyle, setIsDraggingStyle] = useState<boolean>(false) // does update render
+  const inputType: reactRef = useRef('') // mouse or touch
 
   // Dragging state
-  const restPositionX = useRef(0)
-  const velocityX = useRef(0)
-  const downX = useRef(0)
-  const dragStartPosition = useRef(0)
-  const nativePosition = useRef(0) // starting position
-  const dragPosition = useRef(nativePosition.current)
+  const restPositionX: reactRef = useRef(0)
+  const velocityX: reactRef = useRef(0)
+  const downX: reactRef = useRef(0)
+  const dragStartPosition: reactRef = useRef(0)
+  const nativePosition: reactRef = useRef(0) // starting position
+  const dragPosition: reactRef = useRef(nativePosition.current)
 
-  const rafId = useRef(null)
+  const rafId: reactRef = useRef(null)
 
   // componentDidMount
   useEffect(() => {
     outerWidth.current = outerEl.current.scrollWidth
     innerWidth.current = innerEl.current.scrollWidth
 
-    const { left, right } = getBoundaries({
+    const { left, right }: { left: number; right: number } = getBoundaries({
       outerWidth: outerWidth.current,
       innerWidth: innerWidth.current,
-      elClientLeft: outerEl.current.clientLeft,
+      elClientLeft: outerEl.current.clientLeft
     })
 
     leftBound.current = left
@@ -56,21 +85,22 @@ export default function Dragger(props) {
     // Update the edge boundaries when the outer element is resized
     // Update the inner width when the children change size
     // Check first if ResizeObserver is available on the window or if a polyfill is supplied by the user via props
-    if (!window.ResizeObserver && !props.ResizeObserver) {
+    if ((window as any).ResizeObserver && !props.ResizeObserver) {
       throw new Error('No ResizeObserver is available. Please check the docs for instructions on how to add a polyfill.')
     }
 
-    const Ro = window.ResizeObserver || props.ResizeObserver
-    const observer = new Ro(entries => {
+    const Ro = (window as any).ResizeObserver || props.ResizeObserver
+    // address the 'any' typing of entries
+    const observer = new Ro((entries: any[]) => {
       // use the elements ID to determine whether the inner or the outer has been observed
       const id = entries[0].target.dataset.id
       if (id === 'Dragger-inner') innerWidth.current = entries[0].contentRect.width
       if (id === 'Dragger-outer') outerWidth.current = entries[0].contentRect.width
 
-      const { left, right } = getBoundaries({
+      const { left, right }: { left: number; right: number } = getBoundaries({
         outerWidth: outerWidth.current,
         innerWidth: innerWidth.current,
-        elClientLeft: outerEl.current.clientLeft,
+        elClientLeft: outerEl.current.clientLeft
       })
 
       leftBound.current = left
@@ -82,7 +112,7 @@ export default function Dragger(props) {
           x: roundNum(nativePosition.current),
           outerWidth: outerWidth.current,
           innerWidth: innerWidth.current,
-          progress: roundNum((nativePosition.current) / (outerWidth.current - innerWidth.current)),
+          progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current))
         })
       }
     })
@@ -103,7 +133,7 @@ export default function Dragger(props) {
     }
   }, [props.friction])
 
-  const update = () => {
+  const update = (): void => {
     velocityX.current *= settings.current.friction
 
     if (!isDragging.current && nativePosition.current < leftBound.current) {
@@ -112,7 +142,7 @@ export default function Dragger(props) {
         edge: 'left',
         nativePosition: nativePosition.current,
         friction: settings.current.friction,
-        velocityX: velocityX.current,
+        velocityX: velocityX.current
       })
     }
 
@@ -122,7 +152,7 @@ export default function Dragger(props) {
         edge: 'right',
         nativePosition: nativePosition.current,
         friction: settings.current.friction,
-        velocityX: velocityX.current,
+        velocityX: velocityX.current
       })
     }
 
@@ -130,12 +160,12 @@ export default function Dragger(props) {
       isDragging: isDragging.current,
       dragPosition: dragPosition.current,
       nativePosition: nativePosition.current,
-      velocityX: velocityX.current,
+      velocityX: velocityX.current
     })
 
     nativePosition.current += velocityX.current
 
-    const isInfinitesimal = roundNum(Math.abs(velocityX.current)) < 0.001
+    const isInfinitesimal: boolean = roundNum(Math.abs(velocityX.current)) < 0.001
 
     if (!isDragging.current && isInfinitesimal) {
       // no longer dragging and inertia has stopped
@@ -152,32 +182,32 @@ export default function Dragger(props) {
         x: roundNum(nativePosition.current),
         outerWidth: outerWidth.current,
         innerWidth: innerWidth.current,
-        progress: roundNum((nativePosition.current) / (outerWidth.current - innerWidth.current)),
+        progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current))
       })
     }
   }
 
-  const onMove = (e) => {
-    const x = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
-    const moveVector = x - downX.current
+  // address 'any' typing of event // MouseEvent does not have property 'touches'
+  const onMove = (e: any) => {
+    const x: number = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
+    const moveVector: number = x - downX.current
 
     // gradually increase friction as the dragger is pulled beyond bounds
     // credit: https://github.com/metafizzy/flickity/blob/master/dist/flickity.pkgd.js#L2894
-    let dragX = dragStartPosition.current + moveVector
-    const originBound = Math.max(rightBound.current, dragStartPosition.current)
+    let dragX: number = dragStartPosition.current + moveVector
+    const originBound: number = Math.max(rightBound.current, dragStartPosition.current)
     dragX = dragX > originBound ? (dragX + originBound) * 0.5 : dragX
-    const endBound = Math.min(leftBound.current, dragStartPosition.current)
+    const endBound: number = Math.min(leftBound.current, dragStartPosition.current)
     dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
 
     dragPosition.current = dragX
   }
 
-  const onRelease = (e) => {
+  const onRelease = (e: MouseEvent<any> | any) => {
     isDragging.current = false
     setIsDraggingStyle(false)
-
     // if the slider hasn't dragged sufficiently treat it as a static click
-    const moveVector = Math.abs(downX.current - e.pageX)
+    const moveVector: number = Math.abs(downX.current - e.pageX)
     if (moveVector < 20 && props.onStaticClick) {
       props.onStaticClick(e.target)
     }
@@ -195,7 +225,7 @@ export default function Dragger(props) {
     }
   }
 
-  const onStart = (e) => {
+  const onStart = (e: MouseEvent<any> | any) => {
     if (props.disabled) return
 
     // dismiss clicks from right or middle buttons
@@ -213,7 +243,7 @@ export default function Dragger(props) {
     docStyle.cursor = 'grabbing'
     docStyle.userSelect = 'none'
 
-    inputType.current = (e.type === 'mousedown' ? 'mouse' : 'touch')
+    inputType.current = e.type === 'mousedown' ? 'mouse' : 'touch'
 
     downX.current = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
     dragStartPosition.current = nativePosition.current
@@ -275,13 +305,13 @@ export default function Dragger(props) {
       className={`${styles.outer} ${isDraggingStyle ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
-      style={{ ...props.style }}
+      style={props.style}
     >
       <div
         data-id='Dragger-inner'
         ref={innerEl}
         className={`${styles.inner} dragger-inner`}
-        style={{ 'transform': `translateX(${restPositionX.current}px)` }}
+        style={{ transform: `translateX(${restPositionX.current}px)` }}
       >
         {props.children}
       </div>
@@ -289,18 +319,6 @@ export default function Dragger(props) {
   )
 }
 
-Dragger.propTypes = {
-  friction: PropTypes.number,
-  ResizeObserver: PropTypes.func,
-  onFrame: PropTypes.func,
-  onStaticClick: PropTypes.func,
-  disabled: PropTypes.bool,
-  className: PropTypes.string,
-  style: PropTypes.object,
-  children: PropTypes.node,
-}
+Dragger.defaultProps = defaultProps
 
-Dragger.defaultProps = {
-  friction: 0.92,
-  disabled: false,
-}
+export default Dragger
