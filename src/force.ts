@@ -42,3 +42,16 @@ export const applyBoundForce = ({ bound, edge, nativePosition, friction, velocit
     return applyForce({ velocityX, force })
   }
 }
+
+interface MoveToPosition {
+  position: number
+  nativePosition: number
+  friction: number
+  velocityX: number
+}
+
+export function moveToPosition({ position, nativePosition, friction, velocityX }: MoveToPosition) {
+  const distance = position - nativePosition
+  const force = distance * (1 - friction) - velocityX
+  return applyForce({ velocityX, force })
+}

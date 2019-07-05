@@ -7,9 +7,12 @@ import getBoundaries from './getBoundaries'
 import styles from './styles.css'
 
 type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number }
+type draggerRefParams = { setPosition: Function; }
+
 interface Props {
   friction: number
   ResizeObserver: boolean
+  draggerRef: (args: draggerRefParams) => void
   onFrame: (args: onFrameParams) => void
   onStaticClick: (e: EventTarget | MouseEvent<any>) => void
   disabled: boolean
@@ -291,7 +294,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
   }
 
-  function setPosition(position) {
+  function setPosition(position: number) {
     const finalPosition = Math.min(Math.max(leftBound.current, position), rightBound.current)
     dragPosition.current = finalPosition
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
