@@ -7,7 +7,7 @@ import getBoundaries from './getBoundaries'
 import styles from './styles.css'
 
 type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number }
-type draggerRefParams = { setPosition: Function; }
+type draggerRefParams = { setPosition: Function; outerWidth: number; innerWidth: number; }
 
 interface Props {
   friction: number
@@ -95,7 +95,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     const Ro = (window as any).ResizeObserver || props.ResizeObserver
     // address the 'any' typing of entries
     const observer = new Ro((entries: any[]) => {
-      // use the elements ID to determine whether the inner or the outer has been observed
+      // use the elements data-id to determine whether the inner or the outer has been observed
       const id = entries[0].target.dataset.id
       if (id === 'Dragger-inner') innerWidth.current = entries[0].contentRect.width
       if (id === 'Dragger-outer') outerWidth.current = entries[0].contentRect.width
@@ -115,19 +115,24 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
           x: roundNum(nativePosition.current),
           outerWidth: outerWidth.current,
           innerWidth: innerWidth.current,
-          progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current))
+          progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current)),
+        })
+      }
+
+      // if a draggerRef has been provided, broadcast changes to it as well
+      // and make the setPosition function available
+      if (props.draggerRef) {
+        props.draggerRef({
+          setPosition,
+          outerWidth: outerWidth.current,
+          innerWidth: innerWidth.current,
         })
       }
     })
     observer.observe(outerEl.current)
     observer.observe(innerEl.current)
 
-    if (props.draggerRef) {
-      props.draggerRef({
-        setPosition,
-      })
-    }
-  }, [])
+  }, [props.disabled]) // keep track of whether the component is disabled
 
   // componentDidUpdate
   useEffect(() => {
@@ -136,7 +141,17 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
   }, [props.friction])
 
-  const update = (): void => {
+
+  function setPosition(position: number) {
+    if (props.disabled) return
+
+    const finalPosition = Math.min(Math.max(leftBound.current, position), rightBound.current)
+    dragPosition.current = finalPosition
+    window.cancelAnimationFrame(rafId.current) // cancel any existing loop
+    rafId.current = window.requestAnimationFrame(forceUpdateLoop) // kick off a new loop
+  }
+
+  function updateLoop() {
     velocityX.current *= settings.current.friction
 
     if (!isDragging.current && nativePosition.current < leftBound.current) {
@@ -177,7 +192,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     } else {
       // bypass Reacts render method during animation, similar to react-spring
       innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
-      rafId.current = window.requestAnimationFrame(update)
+      rafId.current = window.requestAnimationFrame(updateLoop)
     }
 
     if (props.onFrame) {
@@ -187,79 +202,6 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
         innerWidth: innerWidth.current,
         progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current))
       })
-    }
-  }
-
-  // address 'any' typing of event // MouseEvent does not have property 'touches'
-  const onMove = (e: any) => {
-    const x: number = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
-    const moveVector: number = x - downX.current
-
-    // gradually increase friction as the dragger is pulled beyond bounds
-    // credit: https://github.com/metafizzy/flickity/blob/master/dist/flickity.pkgd.js#L2894
-    let dragX: number = dragStartPosition.current + moveVector
-    const originBound: number = Math.max(rightBound.current, dragStartPosition.current)
-    dragX = dragX > originBound ? (dragX + originBound) * 0.5 : dragX
-    const endBound: number = Math.min(leftBound.current, dragStartPosition.current)
-    dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
-
-    dragPosition.current = dragX
-  }
-
-  const onRelease = (e: MouseEvent<any> | any) => {
-    isDragging.current = false
-    setIsDraggingStyle(false)
-    // if the slider hasn't dragged sufficiently treat it as a static click
-    const moveVector: number = Math.abs(downX.current - e.pageX)
-    if (moveVector < 20 && props.onStaticClick) {
-      props.onStaticClick(e.target)
-    }
-
-    // Update html element styles
-    docStyle.cursor = ''
-    docStyle.userSelect = ''
-
-    if (inputType.current === 'mouse') {
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onRelease)
-    } else {
-      window.removeEventListener('touchmove', onMove)
-      window.removeEventListener('touchend', onRelease)
-    }
-  }
-
-  const onStart = (e: MouseEvent<any> | any) => {
-    if (props.disabled) return
-
-    // dismiss clicks from right or middle buttons
-    // (credit: https://github.com/metafizzy/flickity/blob/e2706840532c0ce9c4fc25832e810ad4f9823b61/dist/flickity.pkgd.js#L2176)
-    const mouseButton = e.button
-    if (mouseButton && (mouseButton !== 0 && mouseButton !== 1)) return
-
-    isDragging.current = true
-    setIsDraggingStyle(true)
-
-    window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(update) // kick off a new loop
-
-    // Update <html> element styles
-    docStyle.cursor = 'grabbing'
-    docStyle.userSelect = 'none'
-
-    inputType.current = e.type === 'mousedown' ? 'mouse' : 'touch'
-
-    downX.current = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
-    dragStartPosition.current = nativePosition.current
-
-    // initial onMove needed to set the starting mouse position
-    onMove(e)
-
-    if (inputType.current === 'mouse') {
-      window.addEventListener('mousemove', onMove)
-      window.addEventListener('mouseup', onRelease)
-    } else if (inputType.current === 'touch') {
-      window.addEventListener('touchmove', onMove)
-      window.addEventListener('touchend', onRelease)
     }
   }
 
@@ -294,11 +236,77 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
   }
 
-  function setPosition(position: number) {
-    const finalPosition = Math.min(Math.max(leftBound.current, position), rightBound.current)
-    dragPosition.current = finalPosition
+  // address 'any' typing of event // MouseEvent does not have property 'touches'
+  function onMove(e: any) {
+    const x: number = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
+    const moveVector: number = x - downX.current
+
+    // gradually increase friction as the dragger is pulled beyond bounds
+    // credit: https://github.com/metafizzy/flickity/blob/master/dist/flickity.pkgd.js#L2894
+    let dragX: number = dragStartPosition.current + moveVector
+    const originBound: number = Math.max(rightBound.current, dragStartPosition.current)
+    dragX = dragX > originBound ? (dragX + originBound) * 0.5 : dragX
+    const endBound: number = Math.min(leftBound.current, dragStartPosition.current)
+    dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
+
+    dragPosition.current = dragX
+  }
+
+  function onRelease(e: MouseEvent<any> | any) {
+    isDragging.current = false
+    setIsDraggingStyle(false)
+    // if the slider hasn't dragged sufficiently treat it as a static click
+    const moveVector: number = Math.abs(downX.current - e.pageX)
+    if (moveVector < 20 && props.onStaticClick) {
+      props.onStaticClick(e.target)
+    }
+
+    // Update html element styles
+    docStyle.cursor = ''
+    docStyle.userSelect = ''
+
+    if (inputType.current === 'mouse') {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onRelease)
+    } else {
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onRelease)
+    }
+  }
+
+  function onStart(e: MouseEvent<any> | any) {
+    if (props.disabled) return
+
+    // dismiss clicks from right or middle buttons
+    // (credit: https://github.com/metafizzy/flickity/blob/e2706840532c0ce9c4fc25832e810ad4f9823b61/dist/flickity.pkgd.js#L2176)
+    const mouseButton = e.button
+    if (mouseButton && (mouseButton !== 0 && mouseButton !== 1)) return
+
+    isDragging.current = true
+    setIsDraggingStyle(true)
+
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(forceUpdateLoop) // kick off a new loop
+    rafId.current = window.requestAnimationFrame(updateLoop) // kick off a new loop
+
+    // Update <html> element styles
+    docStyle.cursor = 'grabbing'
+    docStyle.userSelect = 'none'
+
+    inputType.current = e.type === 'mousedown' ? 'mouse' : 'touch'
+
+    downX.current = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
+    dragStartPosition.current = nativePosition.current
+
+    // initial onMove needed to set the starting mouse position
+    onMove(e)
+
+    if (inputType.current === 'mouse') {
+      window.addEventListener('mousemove', onMove)
+      window.addEventListener('mouseup', onRelease)
+    } else if (inputType.current === 'touch') {
+      window.addEventListener('touchmove', onMove)
+      window.addEventListener('touchend', onRelease)
+    }
   }
 
   return (
