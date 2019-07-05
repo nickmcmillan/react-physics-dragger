@@ -262,16 +262,8 @@ export default function Dragger(props) {
   }
 
   function setPosition(position) {
-    if (position < leftBound.current) {
-      // push to right bound
-      dragPosition.current = leftBound.current
-    } else if (position > rightBound.current) {
-      // push to left bound
-      dragPosition.current = rightBound.current
-    } else {
-      // otherwise just nudget the carousel to the specified position
-      dragPosition.current = position
-    }
+    const finalPosition = Math.min(Math.max(leftBound.current, position), rightBound.current)
+    dragPosition.current = finalPosition
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
     rafId.current = window.requestAnimationFrame(forceUpdateLoop) // kick off a new loop
   }
