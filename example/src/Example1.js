@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
@@ -17,17 +17,12 @@ const Example1 = () => {
   const [isDisabled, setIsDisabled] = useState(false)
   const [friction, setFriction] = useState(0.9)
   const [clickedItem, setClickedItem] = useState(null)
-  const [position, setPosition] = useState(null)
-
   const draggerRef = useRef(null)
-  useEffect(() => {
-    if (!draggerRef.current) return
-    draggerRef.current.setPosition(position)
-  }, [position, draggerRef.current])
 
   return (
     <section className='section'>
       <Dragger
+        // Dragger internals are exposed via its ref
         draggerRef={r => draggerRef.current = r}
         disabled={isDisabled}
         ResizeObserver={ResizeObserver}
@@ -70,18 +65,6 @@ const Example1 = () => {
         >
           Remove item
         </button>
-        <button
-          className="btn"
-          onClick={() => setPosition(frame.x - 200)}
-        >
-          -200px
-        </button>
-        <button
-          className="btn"
-          onClick={() => setPosition(frame.x + 200)}
-        >
-          +200px
-        </button>
         <div className='btn'>
           <label htmlFor='friction'>Friction: </label>
           <input
@@ -95,6 +78,45 @@ const Example1 = () => {
           />
           <span className='sub'> {friction}</span>
         </div>
+        
+      </div>
+      <div className='button-group'>
+        <button
+          className="btn"
+          onClick={() => {
+            const newPosition = frame.x - 200
+            draggerRef.current.setPosition(newPosition)
+          }}
+        >
+          -200px
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            const newPosition = frame.x + 200
+            draggerRef.current.setPosition(newPosition)
+          }}
+        >
+          +200px
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            draggerRef.current.setPosition(0)
+          }}
+        >
+          Go to left edge
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            const outer = draggerRef.current.outerWidth
+            const inner = draggerRef.current.innerWidth
+            draggerRef.current.setPosition(outer - inner)
+          }}
+        >
+          Go to right edge
+        </button>
       </div>
 
       <h2>onStaticClick</h2>

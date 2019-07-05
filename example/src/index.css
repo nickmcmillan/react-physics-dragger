@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Lora');
+@import url("https://fonts.googleapis.com/css?family=Lora");
 
 html {
   box-sizing: border-box;
@@ -12,8 +12,7 @@ html {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
@@ -21,7 +20,7 @@ body {
 
 h1 {
   font-size: 5vmin;
-  font-family: 'Lora', serif;
+  font-family: "Lora", serif;
   max-width: 10rem;
   line-height: 1;
 }
@@ -29,7 +28,7 @@ h1 {
 h2 {
   font-size: 1rem;
   margin: 0 0 1rem;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .title-bar {
@@ -156,16 +155,11 @@ button.btn:focus {
   outline: 0;
 }
 
-
 .img {
   width: 150%;
   height: 100%;
   object-fit: cover;
   pointer-events: none;
-}
-
-.button-group {
-  margin-bottom: 3rem;
 }
 
 @media (min-width: 768px) {
