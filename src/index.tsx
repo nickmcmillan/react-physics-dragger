@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, MouseEvent, ReactNode, RefObject, MutableRefObject } from 'react'
 
-import { roundNum } from './utils'
-import { applyDragForce, applyBoundForce, moveToPosition } from './force'
+import { roundNum, isNumeric } from './utils'
+import { applyDragForce, applyBoundForce, applyForce } from './force'
 import getBoundaries from './getBoundaries'
 
 import styles from './styles.css'
@@ -141,44 +141,58 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
   }, [props.friction])
 
-
+  // setPosition is exposed via ref
   function setPosition(position: number) {
     if (props.disabled) return
-
     const finalPosition = Math.min(Math.max(leftBound.current, position), rightBound.current)
-    dragPosition.current = finalPosition
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(forceUpdateLoop) // kick off a new loop
+    rafId.current = window.requestAnimationFrame(() => { updateLoop(finalPosition) }) // kick off a new loop
   }
 
-  function updateLoop() {
+  function updateLoop(optionalFinalPosition: any) {
+
     velocityX.current *= settings.current.friction
 
-    if (!isDragging.current && nativePosition.current < leftBound.current) {
-      velocityX.current = applyBoundForce({
-        bound: leftBound.current,
-        edge: 'left',
-        nativePosition: nativePosition.current,
-        friction: settings.current.friction,
-        velocityX: velocityX.current
-      })
-    }
+    // if a number is provided as a param (optionalFinalPosition), move to that position
+    if (isNumeric(optionalFinalPosition)) {
 
-    if (!isDragging.current && nativePosition.current > rightBound.current) {
-      velocityX.current = applyBoundForce({
-        bound: rightBound.current,
-        edge: 'right',
-        nativePosition: nativePosition.current,
-        friction: settings.current.friction,
-        velocityX: velocityX.current
+      const distance = optionalFinalPosition - nativePosition.current
+      const force = distance * (1 - settings.current.friction) - velocityX.current
+
+      velocityX.current = applyForce({
+        velocityX: velocityX.current,
+        force,
       })
+
+    } else {
+
+      if (!isDragging.current && nativePosition.current < leftBound.current) {
+        velocityX.current = applyBoundForce({
+          bound: leftBound.current,
+          edge: 'left',
+          nativePosition: nativePosition.current,
+          friction: settings.current.friction,
+          velocityX: velocityX.current,
+        })
+      }
+
+      if (!isDragging.current && nativePosition.current > rightBound.current) {
+        velocityX.current = applyBoundForce({
+          bound: rightBound.current,
+          edge: 'right',
+          nativePosition: nativePosition.current,
+          friction: settings.current.friction,
+          velocityX: velocityX.current,
+        })
+      }
+
     }
 
     velocityX.current = applyDragForce({
       isDragging: isDragging.current,
       dragPosition: dragPosition.current,
       nativePosition: nativePosition.current,
-      velocityX: velocityX.current
+      velocityX: velocityX.current,
     })
 
     nativePosition.current += velocityX.current
@@ -192,7 +206,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     } else {
       // bypass Reacts render method during animation, similar to react-spring
       innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
-      rafId.current = window.requestAnimationFrame(updateLoop)
+      rafId.current = window.requestAnimationFrame(() => { updateLoop(null) })
     }
 
     if (props.onFrame) {
@@ -201,37 +215,6 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
         outerWidth: outerWidth.current,
         innerWidth: innerWidth.current,
         progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current))
-      })
-    }
-  }
-
-  function forceUpdateLoop() {
-    velocityX.current = moveToPosition({
-      position: dragPosition.current,
-      nativePosition: nativePosition.current,
-      friction: settings.current.friction,
-      velocityX: velocityX.current,
-    })
-
-    nativePosition.current += velocityX.current
-
-    const isInfinitesimal = roundNum(Math.abs(velocityX.current)) < 0.001
-
-    if (isInfinitesimal) {
-      window.cancelAnimationFrame(rafId.current)
-      restPositionX.current = roundNum(nativePosition.current)
-    } else {
-      // bypass Reacts render method during animation, similar to react-spring
-      innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
-      rafId.current = window.requestAnimationFrame(forceUpdateLoop)
-    }
-
-    if (props.onFrame) {
-      props.onFrame({
-        x: roundNum(nativePosition.current),
-        outerWidth: outerWidth.current,
-        innerWidth: innerWidth.current,
-        progress: roundNum((nativePosition.current) / (outerWidth.current - innerWidth.current)),
       })
     }
   }
@@ -286,7 +269,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     setIsDraggingStyle(true)
 
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(updateLoop) // kick off a new loop
+    rafId.current = window.requestAnimationFrame(() => { updateLoop(null) }) // kick off a new loop
 
     // Update <html> element styles
     docStyle.cursor = 'grabbing'

@@ -2,7 +2,7 @@
 // https://www.youtube.com/watch?v=90oMnMFozEE
 // https://codepen.io/desandro/pen/QbPKEq
 
-const applyForce = ({ velocityX, force }: { velocityX: number; force: number }): number => velocityX + force
+export const applyForce = ({ velocityX, force }: { velocityX: number; force: number }): number => velocityX + force
 
 interface DragForce {
   isDragging: boolean
@@ -41,17 +41,4 @@ export const applyBoundForce = ({ bound, edge, nativePosition, friction, velocit
     force = distance * (1 - friction) - velocityX
     return applyForce({ velocityX, force })
   }
-}
-
-interface MoveToPosition {
-  position: number
-  nativePosition: number
-  friction: number
-  velocityX: number
-}
-
-export function moveToPosition({ position, nativePosition, friction, velocityX }: MoveToPosition) {
-  const distance = position - nativePosition
-  const force = distance * (1 - friction) - velocityX
-  return applyForce({ velocityX, force })
 }
