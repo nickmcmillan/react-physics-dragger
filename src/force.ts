@@ -2,7 +2,7 @@
 // https://www.youtube.com/watch?v=90oMnMFozEE
 // https://codepen.io/desandro/pen/QbPKEq
 
-const applyForce = ({ velocityX, force }: { velocityX: number; force: number }): number => velocityX + force
+export const applyForce = ({ velocityX, force }: { velocityX: number; force: number }): number => velocityX + force
 
 interface DragForce {
   isDragging: boolean

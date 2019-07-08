@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef, MouseEvent, ReactNode, RefObject, MutableRefObject } from 'react'
 
-import { roundNum } from './utils'
-import { applyDragForce, applyBoundForce } from './force'
+import { roundNum, isNumeric } from './utils'
+import { applyDragForce, applyBoundForce, applyForce } from './force'
 import getBoundaries from './getBoundaries'
 
 import styles from './styles.css'
 
 type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number }
+type draggerRefParams = { setPosition: Function; outerWidth: number; innerWidth: number; }
+
 interface Props {
   friction: number
   ResizeObserver: boolean
+  draggerRef: (args: draggerRefParams) => void
   onFrame: (args: onFrameParams) => void
   onStaticClick: (e: EventTarget | MouseEvent<any>) => void
   disabled: boolean
@@ -92,7 +95,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     const Ro = (window as any).ResizeObserver || props.ResizeObserver
     // address the 'any' typing of entries
     const observer = new Ro((entries: any[]) => {
-      // use the elements ID to determine whether the inner or the outer has been observed
+      // use the elements data-id to determine whether the inner or the outer has been observed
       const id = entries[0].target.dataset.id
       if (id === 'Dragger-inner') innerWidth.current = entries[0].contentRect.width
       if (id === 'Dragger-outer') outerWidth.current = entries[0].contentRect.width
@@ -112,13 +115,24 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
           x: roundNum(nativePosition.current),
           outerWidth: outerWidth.current,
           innerWidth: innerWidth.current,
-          progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current))
+          progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current)),
+        })
+      }
+
+      // if a draggerRef has been provided, broadcast changes to it as well
+      // and make the setPosition function available
+      if (props.draggerRef) {
+        props.draggerRef({
+          setPosition,
+          outerWidth: outerWidth.current,
+          innerWidth: innerWidth.current,
         })
       }
     })
     observer.observe(outerEl.current)
     observer.observe(innerEl.current)
-  }, [])
+
+  }, [props.disabled]) // keep track of whether the component is disabled
 
   // componentDidUpdate
   useEffect(() => {
@@ -127,34 +141,58 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
   }, [props.friction])
 
-  const update = (): void => {
+  // setPosition is exposed via ref
+  function setPosition(position: number) {
+    if (props.disabled) return
+    const finalPosition = Math.min(Math.max(leftBound.current, position), rightBound.current)
+    window.cancelAnimationFrame(rafId.current) // cancel any existing loop
+    rafId.current = window.requestAnimationFrame(() => { updateLoop(finalPosition) }) // kick off a new loop
+  }
+
+  function updateLoop(optionalFinalPosition: any) {
+
     velocityX.current *= settings.current.friction
 
-    if (!isDragging.current && nativePosition.current < leftBound.current) {
-      velocityX.current = applyBoundForce({
-        bound: leftBound.current,
-        edge: 'left',
-        nativePosition: nativePosition.current,
-        friction: settings.current.friction,
-        velocityX: velocityX.current
-      })
-    }
+    // if a number is provided as a param (optionalFinalPosition), move to that position
+    if (isNumeric(optionalFinalPosition)) {
 
-    if (!isDragging.current && nativePosition.current > rightBound.current) {
-      velocityX.current = applyBoundForce({
-        bound: rightBound.current,
-        edge: 'right',
-        nativePosition: nativePosition.current,
-        friction: settings.current.friction,
-        velocityX: velocityX.current
+      const distance = optionalFinalPosition - nativePosition.current
+      const force = distance * (1 - settings.current.friction) - velocityX.current
+
+      velocityX.current = applyForce({
+        velocityX: velocityX.current,
+        force,
       })
+
+    } else {
+
+      if (!isDragging.current && nativePosition.current < leftBound.current) {
+        velocityX.current = applyBoundForce({
+          bound: leftBound.current,
+          edge: 'left',
+          nativePosition: nativePosition.current,
+          friction: settings.current.friction,
+          velocityX: velocityX.current,
+        })
+      }
+
+      if (!isDragging.current && nativePosition.current > rightBound.current) {
+        velocityX.current = applyBoundForce({
+          bound: rightBound.current,
+          edge: 'right',
+          nativePosition: nativePosition.current,
+          friction: settings.current.friction,
+          velocityX: velocityX.current,
+        })
+      }
+
     }
 
     velocityX.current = applyDragForce({
       isDragging: isDragging.current,
       dragPosition: dragPosition.current,
       nativePosition: nativePosition.current,
-      velocityX: velocityX.current
+      velocityX: velocityX.current,
     })
 
     nativePosition.current += velocityX.current
@@ -168,7 +206,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     } else {
       // bypass Reacts render method during animation, similar to react-spring
       innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
-      rafId.current = window.requestAnimationFrame(update)
+      rafId.current = window.requestAnimationFrame(() => { updateLoop(null) })
     }
 
     if (props.onFrame) {
@@ -182,7 +220,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
   }
 
   // address 'any' typing of event // MouseEvent does not have property 'touches'
-  const onMove = (e: any) => {
+  function onMove(e: any) {
     const x: number = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
     const moveVector: number = x - downX.current
 
@@ -197,7 +235,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     dragPosition.current = dragX
   }
 
-  const onRelease = (e: MouseEvent<any> | any) => {
+  function onRelease(e: MouseEvent<any> | any) {
     isDragging.current = false
     setIsDraggingStyle(false)
     // if the slider hasn't dragged sufficiently treat it as a static click
@@ -219,7 +257,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
   }
 
-  const onStart = (e: MouseEvent<any> | any) => {
+  function onStart(e: MouseEvent<any> | any) {
     if (props.disabled) return
 
     // dismiss clicks from right or middle buttons
@@ -231,7 +269,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     setIsDraggingStyle(true)
 
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(update) // kick off a new loop
+    rafId.current = window.requestAnimationFrame(() => { updateLoop(null) }) // kick off a new loop
 
     // Update <html> element styles
     docStyle.cursor = 'grabbing'

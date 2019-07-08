@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
@@ -13,16 +13,21 @@ const evilExes = [
 
 const Example1 = () => {
   const [items, setItems] = useState([...evilExes])
+  const [frame, setFrame] = useState({})
   const [isDisabled, setIsDisabled] = useState(false)
   const [friction, setFriction] = useState(0.9)
   const [clickedItem, setClickedItem] = useState(null)
+  const draggerRef = useRef(null)
 
   return (
     <section className='section'>
       <Dragger
+        // Dragger internals are exposed via its ref
+        draggerRef={r => draggerRef.current = r}
         disabled={isDisabled}
         ResizeObserver={ResizeObserver}
         friction={friction}
+        onFrame={frame => setFrame(frame)}
         className='dragger'
         onStaticClick={el => {
           if (el.nodeName === 'BUTTON') setClickedItem(el.textContent)
@@ -73,6 +78,45 @@ const Example1 = () => {
           />
           <span className='sub'> {friction}</span>
         </div>
+        
+      </div>
+      <div className='button-group'>
+        <button
+          className="btn"
+          onClick={() => {
+            const newPosition = frame.x - 200
+            draggerRef.current.setPosition(newPosition)
+          }}
+        >
+          -200px
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            const newPosition = frame.x + 200
+            draggerRef.current.setPosition(newPosition)
+          }}
+        >
+          +200px
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            draggerRef.current.setPosition(0)
+          }}
+        >
+          Left edge
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            const outer = draggerRef.current.outerWidth
+            const inner = draggerRef.current.innerWidth
+            draggerRef.current.setPosition(outer - inner)
+          }}
+        >
+          Right edge
+        </button>
       </div>
 
       <h2>onStaticClick</h2>
