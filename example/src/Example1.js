@@ -105,7 +105,7 @@ const Example1 = () => {
             draggerRef.current.setPosition(0)
           }}
         >
-          Go to left edge
+          Left edge
         </button>
         <button
           className="btn"
@@ -115,7 +115,7 @@ const Example1 = () => {
             draggerRef.current.setPosition(outer - inner)
           }}
         >
-          Go to right edge
+          Right edge
         </button>
       </div>
 
