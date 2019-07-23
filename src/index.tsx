@@ -292,6 +292,11 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
   }
 
+  function onBlur() {
+    // reset the browsers automatic container scrolling, caused by tabbing
+    outerEl.current.scrollTo(0, 0)
+  }
+
   return (
     <div
       data-id='Dragger-outer'
@@ -299,6 +304,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
       className={`${styles.outer} ${isDraggingStyle ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
+      onBlur={onBlur}
       style={props.style}
     >
       <div
