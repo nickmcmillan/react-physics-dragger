@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, MouseEvent, ReactNode, RefObject, MutableRefObject } from 'react'
+import React, { useState, useEffect, useRef, MouseEvent, FocusEvent, ReactNode, RefObject, MutableRefObject } from 'react'
 
 import { roundNum, isNumeric } from './utils'
 import { applyDragForce, applyBoundForce, applyForce } from './force'
@@ -292,6 +292,19 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
   }
 
+  function onKeyFocus(e: FocusEvent<any>) {
+    // handle tabbing within the component
+    const elLeft = e.target.offsetLeft
+
+    // if the tabbed-to element is already visible within the dragger, no need to move the dragger position
+    if (nativePosition.current <= leftBound.current && elLeft >= -nativePosition.current) {
+      return
+    }
+
+    window.cancelAnimationFrame(rafId.current) // cancel any existing loop
+    rafId.current = window.requestAnimationFrame(() => { updateLoop(-elLeft) }) // kick off a new loop
+  }
+
   return (
     <div
       data-id='Dragger-outer'
@@ -299,6 +312,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
       className={`${styles.outer} ${isDraggingStyle ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
       onTouchStart={onStart}
       onMouseDown={onStart}
+      onFocus={onKeyFocus}
       style={props.style}
     >
       <div
