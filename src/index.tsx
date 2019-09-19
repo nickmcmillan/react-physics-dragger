@@ -79,7 +79,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     const { left, right }: { left: number; right: number } = getBoundaries({
       outerWidth: outerWidth.current,
       innerWidth: innerWidth.current,
-      elClientLeft: outerEl.current.clientLeft
+      elClientLeft: outerEl.current && outerEl.current.clientLeft || 0
     })
 
     leftBound.current = left
@@ -103,7 +103,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
       const { left, right }: { left: number; right: number } = getBoundaries({
         outerWidth: outerWidth.current,
         innerWidth: innerWidth.current,
-        elClientLeft: outerEl.current.clientLeft
+        elClientLeft: outerEl.current && outerEl.current.clientLeft || 0,
       })
 
       leftBound.current = left
