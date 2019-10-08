@@ -150,6 +150,11 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
   }
 
   function updateLoop(optionalFinalPosition: any) {
+    // bail out of the loop if the component has been unmounted
+    if (!outerEl.current) {
+      window.cancelAnimationFrame(rafId.current)
+      return
+    }
 
     velocityX.current *= settings.current.friction
 
