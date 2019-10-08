@@ -79,7 +79,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     const { left, right }: { left: number; right: number } = getBoundaries({
       outerWidth: outerWidth.current,
       innerWidth: innerWidth.current,
-      elClientLeft: outerEl.current.clientLeft
+      elClientLeft: outerEl.current && outerEl.current.clientLeft || 0
     })
 
     leftBound.current = left
@@ -103,7 +103,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
       const { left, right }: { left: number; right: number } = getBoundaries({
         outerWidth: outerWidth.current,
         innerWidth: innerWidth.current,
-        elClientLeft: outerEl.current.clientLeft
+        elClientLeft: outerEl.current && outerEl.current.clientLeft || 0,
       })
 
       leftBound.current = left
@@ -150,6 +150,11 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
   }
 
   function updateLoop(optionalFinalPosition: any) {
+    // bail out of the loop if the component has been unmounted
+    if (!outerEl.current) {
+      window.cancelAnimationFrame(rafId.current)
+      return
+    }
 
     velocityX.current *= settings.current.friction
 
