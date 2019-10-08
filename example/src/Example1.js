@@ -17,26 +17,29 @@ const Example1 = () => {
   const [isDisabled, setIsDisabled] = useState(false)
   const [friction, setFriction] = useState(0.9)
   const [clickedItem, setClickedItem] = useState(null)
+  const [isMounted, setIsMounted] = useState(true)
   const draggerRef = useRef(null)
 
   return (
     <section className='section'>
-      <Dragger
-        // Dragger internals are exposed via its ref
-        draggerRef={r => draggerRef.current = r}
-        disabled={isDisabled}
-        ResizeObserver={ResizeObserver}
-        friction={friction}
-        onFrame={frame => setFrame(frame)}
-        className='dragger'
-        onStaticClick={el => {
-          if (el.nodeName === 'BUTTON') setClickedItem(el.textContent)
-        }}
-      >
-        {items.map((item, i) => (
-          <button className='item-standard' key={`${item}-${i}`}>{item}</button>
-        ))}
-      </Dragger>
+      {isMounted &&
+        <Dragger
+          // Dragger internals are exposed via its ref
+          draggerRef={r => draggerRef.current = r}
+          disabled={isDisabled}
+          ResizeObserver={ResizeObserver}
+          friction={friction}
+          onFrame={frame => setFrame(frame)}
+          className='dragger'
+          onStaticClick={el => {
+            if (el.nodeName === 'BUTTON') setClickedItem(el.textContent)
+          }}
+        >
+          {items.map((item, i) => (
+            <button className='item-standard' key={`${item}-${i}`}>{item}</button>
+          ))}
+        </Dragger>
+      }
 
       <div className='button-group'>
         <button className='btn' onClick={() => setIsDisabled(!isDisabled)}>
@@ -116,6 +119,12 @@ const Example1 = () => {
           }}
         >
           Right edge
+        </button>
+        <button
+          className="btn"
+          onClick={() => setIsMounted(!isMounted)}
+        >
+          {isMounted ? 'Unmount' : 'Mount'} component
         </button>
       </div>
 
