@@ -38,7 +38,13 @@ type reactRef = string | ((instance: HTMLDivElement | null) => void) | RefObject
 
 const Dragger: React.FC<PropsWithDefaults> = props => {
 
-  const docStyle = document.documentElement.style
+  const docStyle = useRef({
+    cursor: '',
+    userSelect: '',
+  })
+  useEffect(() => {
+    docStyle.current = document.documentElement.style
+  }, [])
 
   const settings: MutableRefObject<{
     friction: number
@@ -132,8 +138,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     observer.observe(outerEl.current)
     observer.observe(innerEl.current)
 
-  // keep track of resizes and whether the component is disabled
-  }, [rightBound.current, leftBound.current, props.disabled])
+  }, [rightBound.current, leftBound.current, props.disabled]) // keep track of whether the component is disabled
 
   // componentDidUpdate
   useEffect(() => {
@@ -251,8 +256,8 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
 
     // Update html element styles
-    docStyle.cursor = ''
-    docStyle.userSelect = ''
+    docStyle.current.cursor = ''
+    docStyle.current.userSelect = ''
 
     if (inputType.current === 'mouse') {
       window.removeEventListener('mousemove', onMove)
@@ -278,8 +283,8 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     rafId.current = window.requestAnimationFrame(() => { updateLoop(null) }) // kick off a new loop
 
     // Update <html> element styles
-    docStyle.cursor = 'grabbing'
-    docStyle.userSelect = 'none'
+    docStyle.current.cursor = 'grabbing'
+    docStyle.current.userSelect = 'none'
 
     inputType.current = e.type === 'mousedown' ? 'mouse' : 'touch'
 
