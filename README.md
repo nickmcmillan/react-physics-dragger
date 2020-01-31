@@ -50,6 +50,7 @@ const App = () => {
 | `onFrame`        | callback function |         | Optional. This function is fired on every movement, resize, and mount. It provides one param object includes the `x` position, `progress` (from 0 to 1), and dragger dimensions. See _Example2_. |
 | `onDown`        | callback function |         | Optional. Fired on mouse or touch press. |
 | `onUp`        | callback function |         | Optional. Fired on mouse or touch release. |
+| `setCursorStyles`        | boolean | true   | Optional. If enabled, styles are added/removed to the `<html>` element for grabbing cursor styles. |
 | `disabled`       | boolean           | false   | Optional. Enable/disable the component.                                                                                                                                                          |
 | `friction`       | number            | 0.92    | Optional. Lower values feel grippier, higher values feel slippier.                                                                                                                               |
 | `ResizeObserver` |                   |         | Optional. If you need the polyfill pass it in as a prop.                                                                                                                                         |

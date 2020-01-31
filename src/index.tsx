@@ -17,6 +17,7 @@ interface Props {
   onStaticClick: (e: EventTarget | MouseEvent<any>) => void
   onDown: () => void
   onUp: () => void
+  setCursorStyles: boolean
   disabled: boolean
   className: string
   style: any
@@ -26,11 +27,13 @@ interface Props {
 interface DefaultProps {
   friction?: number
   disabled?: boolean
+
 }
 
 const defaultProps: DefaultProps = {
   friction: 0.92,
   disabled: false,
+  setCursorStyles: true,
 }
 
 type PropsWithDefaults = Props & DefaultProps
@@ -261,8 +264,10 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     }
 
     // Update html element styles
-    docStyle.current.cursor = ''
-    docStyle.current.userSelect = ''
+    if (props.setCursorStyles) {
+      docStyle.current.cursor = ''
+      docStyle.current.userSelect = ''
+    }
 
     if (inputType.current === 'mouse') {
       window.removeEventListener('mousemove', onMove)
@@ -283,15 +288,17 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
 
     isDragging.current = true
     setIsDraggingStyle(true)
-    
+
     if (props.onDown) props.onDown()
 
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
     rafId.current = window.requestAnimationFrame(() => { updateLoop(null) }) // kick off a new loop
 
     // Update <html> element styles
-    docStyle.current.cursor = 'grabbing'
-    docStyle.current.userSelect = 'none'
+    if (props.setCursorStyles) {
+      docStyle.current.cursor = 'grabbing'
+      docStyle.current.userSelect = 'none'
+    }
 
     inputType.current = e.type === 'mousedown' ? 'mouse' : 'touch'
 
