@@ -43,13 +43,7 @@ type reactRef = string | ((instance: HTMLDivElement | null) => void) | RefObject
 
 const Dragger: React.FC<PropsWithDefaults> = props => {
 
-  const docStyle = useRef({
-    cursor: '',
-    userSelect: '',
-  })
-  useEffect(() => {
-    docStyle.current = document.documentElement.style
-  }, [])
+  const docStyle = typeof window !== 'undefined' ? document.documentElement.style : { cursor: '', userSelect: ''}
 
   const settings: MutableRefObject<{
     friction: number
@@ -265,8 +259,8 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
 
     // Update html element styles
     if (props.setCursorStyles) {
-      docStyle.current.cursor = ''
-      docStyle.current.userSelect = ''
+      docStyle.cursor = ''
+      docStyle.userSelect = ''
     }
 
     if (inputType.current === 'mouse') {
@@ -296,8 +290,8 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
 
     // Update <html> element styles
     if (props.setCursorStyles) {
-      docStyle.current.cursor = 'grabbing'
-      docStyle.current.userSelect = 'none'
+      docStyle.cursor = 'grabbing'
+      docStyle.userSelect = 'none'
     }
 
     inputType.current = e.type === 'mousedown' ? 'mouse' : 'touch'
