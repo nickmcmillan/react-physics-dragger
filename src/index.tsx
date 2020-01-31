@@ -27,7 +27,7 @@ interface Props {
 interface DefaultProps {
   friction?: number
   disabled?: boolean
-
+  setCursorStyles?: boolean
 }
 
 const defaultProps: DefaultProps = {
