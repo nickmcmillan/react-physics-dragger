@@ -87,8 +87,8 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
 
     // Update the edge boundaries when the outer element is resized
     // Update the inner width when the children change size
-    // Check first if ResizeObserver is available on the window or if a polyfill is supplied by the user via props
-    if ((window as any).ResizeObserver && !props.ResizeObserver) {
+    // Check if ResizeObserver is available on the window, and if no polyfill is supplied by the user via props
+    if (!(window as any).ResizeObserver && !props.ResizeObserver) {
       throw new Error('No ResizeObserver is available. Please check the docs for instructions on how to add a polyfill.')
     }
 
