@@ -312,7 +312,12 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     <div
       data-id='Dragger-outer'
       ref={outerEl}
-      className={`${styles.outer} ${isDraggingStyle ? styles.isDragging : ''}${props.disabled ? ' is-disabled' : ''} ${props.className}`}
+      className={[
+        styles.outer,
+        isDraggingStyle ? styles.isDragging : null,
+        props.disabled ? ' is-disabled' : null,
+        props.className
+      ].join(' ')}
       onTouchStart={onStart}
       onMouseDown={onStart}
       onBlur={onBlur}
@@ -321,7 +326,10 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
       <div
         data-id='Dragger-inner'
         ref={innerEl}
-        className={`${styles.inner} dragger-inner`}
+        className={[
+          styles.inner,
+          'dragger-inner'
+        ].join(' ')}
         style={{ transform: `translateX(${restPositionX.current}px)` }}
       >
         {props.children}
