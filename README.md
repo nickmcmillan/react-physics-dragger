@@ -48,6 +48,8 @@ const App = () => {
 | :--------------- | :---------------- | :------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ref`            | React Ref         |         | Optional. Use to access the components Ref methods (see below section "Ref Methods") and _Example1_.                                                                                             |
 | `onFrame`        | callback function |         | Optional. This function is fired on every movement, resize, and mount. It provides one param object includes the `x` position, `progress` (from 0 to 1), and dragger dimensions. See _Example2_. |
+| `onDown`        | callback function |         | Optional. Fired on mouse or touch press. |
+| `onUp`        | callback function |         | Optional. Fired on mouse or touch release. |
 | `disabled`       | boolean           | false   | Optional. Enable/disable the component.                                                                                                                                                          |
 | `friction`       | number            | 0.92    | Optional. Lower values feel grippier, higher values feel slippier.                                                                                                                               |
 | `ResizeObserver` |                   |         | Optional. If you need the polyfill pass it in as a prop.                                                                                                                                         |

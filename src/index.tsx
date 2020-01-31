@@ -15,6 +15,8 @@ interface Props {
   draggerRef: (args: draggerRefParams) => void
   onFrame: (args: onFrameParams) => void
   onStaticClick: (e: EventTarget | MouseEvent<any>) => void
+  onDown: () => void
+  onUp: () => void
   disabled: boolean
   className: string
   style: any
@@ -249,6 +251,9 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
   function onRelease(e: MouseEvent<any> | any) {
     isDragging.current = false
     setIsDraggingStyle(false)
+
+    if (props.onUp) props.onUp()
+
     // if the slider hasn't dragged sufficiently treat it as a static click
     const moveVector: number = Math.abs(downX.current - e.pageX)
     if (moveVector < 20 && props.onStaticClick) {
@@ -278,6 +283,8 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
 
     isDragging.current = true
     setIsDraggingStyle(true)
+    
+    if (props.onDown) props.onDown()
 
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
     rafId.current = window.requestAnimationFrame(() => { updateLoop(null) }) // kick off a new loop
@@ -316,7 +323,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
         styles.outer,
         isDraggingStyle ? styles.isDragging : null,
         props.disabled ? ' is-disabled' : null,
-        props.className
+        props.className,
       ].join(' ')}
       onTouchStart={onStart}
       onMouseDown={onStart}
