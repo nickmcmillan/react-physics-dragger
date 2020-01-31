@@ -132,7 +132,8 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     observer.observe(outerEl.current)
     observer.observe(innerEl.current)
 
-  }, [props.disabled]) // keep track of whether the component is disabled
+  // keep track of resizes and whether the component is disabled
+  }, [rightBound.current, leftBound.current, props.disabled])
 
   // componentDidUpdate
   useEffect(() => {
