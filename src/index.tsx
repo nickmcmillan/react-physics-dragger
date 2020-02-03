@@ -316,20 +316,23 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     outerEl.current.scrollTo(0, 0)
   }
 
+  const cursor = props.setCursorStyles && isDraggingStyle ? 'grabbing' : props.setCursorStyles ? 'grab' : null
+
   return (
     <div
       data-id='Dragger-outer'
       ref={outerEl}
       className={[
-        styles.outer,
-        isDraggingStyle ? styles.isDragging : null,
         props.disabled ? ' is-disabled' : null,
         props.className,
       ].join(' ')}
       onTouchStart={onStart}
       onMouseDown={onStart}
       onBlur={onBlur}
-      style={props.style}
+      style={{
+        cursor,
+        ...props.style
+      }}
     >
       <div
         data-id='Dragger-inner'
