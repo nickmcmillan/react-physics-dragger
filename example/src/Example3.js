@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useCallback, useRef } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
@@ -7,21 +7,13 @@ function reverseNumber(num, min, max) {
 }
 
 const Example2 = () => {
-  const [frame, setFrame] = useState({})
   const ref = useRef(null)
 
-  useEffect(
-    () => {
-      const width =
-        frame.innerWidth > frame.outerWidth
-          ? frame.outerWidth
-          : frame.innerWidth
-      const x = frame.x / (width - ref.current.offsetWidth)
-      const opacity = reverseNumber(x, 0, 1)
-      ref.current.style.opacity = opacity
-    },
-    [frame.x, frame.outerWidth]
-  )
+  // bypass Reacts render method to perform frequent style updates, similar concept to React Spring
+  const onFrame = useCallback(({ progress }) => {
+    const opacity = reverseNumber(progress, 0, 1)
+    ref.current.style.opacity = opacity
+  }, [])
 
   return (
     <section className='section'>
@@ -29,8 +21,8 @@ const Example2 = () => {
 
       <Dragger
         ResizeObserver={ResizeObserver}
-        onFrame={frame => setFrame(frame)}
-        className='dragger dragger--full'
+        onFrame={onFrame}
+        className='dragger'
       >
         <div className='item-standard' ref={ref}>
           You once were a ve-gone, but now... you will be gone →

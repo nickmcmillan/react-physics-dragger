@@ -1,4 +1,4 @@
-import React, { useState, useRef, useLayoutEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
@@ -43,16 +43,20 @@ const Example2 = () => {
   const innerRefArr = Array.from({ length: items.length }, a => useRef(null)) // eslint-disable-line
   const outerRefArr = Array.from({ length: items.length }, a => useRef(null)) // eslint-disable-line
 
-  useLayoutEffect(
-    () => {
-      const parallaxFactor = -10
-      innerRefArr.forEach((ref, i) => {
-        const x = (frame.x + outerRefArr[i].current.offsetLeft) / parallaxFactor
-        ref.current.style.transform = `translateX(${x}px)`
-      })
-    },
-    [frame.x, innerRefArr, outerRefArr]
-  )
+  const onFrame = useCallback((frame) => {
+
+    // bypass Reacts render method to perform frequent style updates, similar concept to React Spring
+    const parallaxFactor = -10
+    innerRefArr.forEach((ref, i) => {
+      const x = (frame.x + outerRefArr[i].current.offsetLeft) / parallaxFactor
+      ref.current.style.transform = `translateX(${x}px)`
+    })
+
+     // And then only using state here to update the output log in the DOM
+    setFrame(frame)
+    
+  }, [innerRefArr, outerRefArr])
+
 
   return (
     <section className='section'>
@@ -65,7 +69,7 @@ const Example2 = () => {
 
       <Dragger
         ResizeObserver={ResizeObserver}
-        onFrame={frame => setFrame(frame)}
+        onFrame={onFrame}
         className='dragger'
       >
         {items.map((item, i) => (
