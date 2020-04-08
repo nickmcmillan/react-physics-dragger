@@ -21,6 +21,7 @@ interface Props {
   disabled: boolean
   className: string
   style: any
+  innerStyle: any
   children: ReactNode | JSX.Element
 }
 
@@ -341,7 +342,10 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
           styles.inner,
           'dragger-inner'
         ].join(' ')}
-        style={{ transform: `translateX(${restPositionX.current}px)` }}
+        style={{ 
+          transform: `translateX(${restPositionX.current}px)`,
+          ...props.innerStyle
+        }}
       >
         {props.children}
       </div>
