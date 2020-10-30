@@ -216,8 +216,10 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
       restPositionX.current = roundNum(nativePosition.current)
     } else {
       // bypass Reacts render method during animation, similar to react-spring
-      innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
-      rafId.current = window.requestAnimationFrame(() => { updateLoop(null) })
+      if(innerEl.current) {
+      	innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
+      	rafId.current = window.requestAnimationFrame(() => { updateLoop(null) })
+	  }
     }
 
     if (props.onFrame) {
