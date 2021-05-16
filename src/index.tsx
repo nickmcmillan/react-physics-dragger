@@ -1,91 +1,82 @@
-import React, { useState, useEffect, useRef, MouseEvent, ReactNode, RefObject, MutableRefObject } from 'react'
+import React, { useState, useEffect, useRef, MouseEvent, ReactNode } from 'react'
 
-import { roundNum, isNumeric } from './utils'
+import { roundNum } from './utils'
 import { applyDragForce, applyBoundForce, applyForce } from './force'
 import getBoundaries from './getBoundaries'
 
-import styles from './styles.css'
-
-type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number }
 type draggerRefParams = { setPosition: Function; outerWidth: number; innerWidth: number; }
+type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number }
 
-interface Props {
-  friction: number
-  ResizeObserver: boolean
-  draggerRef: (args: draggerRefParams) => void
-  onFrame: (args: onFrameParams) => void
-  onStaticClick: (e: EventTarget | MouseEvent<any>) => void
-  onDown: () => void
-  onUp: () => void
-  setCursorStyles: boolean
-  disabled: boolean
-  className: string
-  style: any
-  innerStyle: any
-  children: ReactNode | JSX.Element
-}
-
-interface DefaultProps {
+type TProps = {
   friction?: number
-  disabled?: boolean
+  ResizeObserverPolyfill?: any
+  draggerRef?: (args: draggerRefParams) => void
+  onFrame?: (args: onFrameParams) => void
+  onStaticClick?: (e: EventTarget) => void
+  onDown?: () => void
+  onUp?: () => void
   setCursorStyles?: boolean
+  disabled?: boolean
+  className?: string
+  style?: any
+  innerStyle?: any
+  children: ReactNode
 }
 
-const defaultProps: DefaultProps = {
-  friction: 0.92,
-  disabled: false,
-  setCursorStyles: true,
-}
+export default function Dragger({
+  friction = 0.92,
+  disabled = false,
+  setCursorStyles = true,
+  onFrame,
+  ResizeObserverPolyfill,
+  onUp,
+  onDown,
+  onStaticClick,
+  className,
+  innerStyle,
+  children,
+  style,
+  draggerRef
+}: TProps) {
 
-type PropsWithDefaults = Props & DefaultProps
-
-// address 'any' typing
-type reactRef = string | ((instance: HTMLDivElement | null) => void) | RefObject<HTMLDivElement> | null | undefined | any
-
-const Dragger: React.FC<PropsWithDefaults> = props => {
+  console.log('render')
 
   const docStyle = typeof window !== 'undefined' ? document.documentElement.style : { cursor: '', userSelect: ''}
 
-  const settings: MutableRefObject<{
-    friction: number
-  }> = useRef({
-    friction: props.friction
-  })
-
   // DOM element refs
-  const outerEl: reactRef = useRef(null)
-  const innerEl: reactRef = useRef(null)
+  const outerEl = useRef<HTMLDivElement>(null)
+  const innerEl = useRef<HTMLDivElement>(null)
 
   // Dimensions
-  const outerWidth: reactRef = useRef(0)
-  const innerWidth: reactRef = useRef(0)
-  const leftBound: reactRef = useRef(0)
-  const rightBound: reactRef = useRef(0)
+  const outerWidth = useRef(0)
+  const innerWidth = useRef(0)
+  const leftBound = useRef(0)
+  const rightBound = useRef(0)
 
   // User input states
-  const isDragging: reactRef = useRef(false) // doesn't update render
-  const [isDraggingStyle, setIsDraggingStyle] = useState<boolean>(false) // does update render
-  const inputType: reactRef = useRef('') // mouse or touch
+  const isDragging = useRef(false) // doesn't update render
+  const [isDraggingStyle, setIsDraggingStyle] = useState(false) // does update render
+  const inputType = useRef<'mouse' | 'touch' | ''>('')
 
   // Dragging state
-  const restPositionX: reactRef = useRef(0)
-  const velocityX: reactRef = useRef(0)
-  const downX: reactRef = useRef(0)
-  const dragStartPosition: reactRef = useRef(0)
-  const nativePosition: reactRef = useRef(0) // starting position
-  const dragPosition: reactRef = useRef(nativePosition.current)
+  const restPositionX = useRef(0)
+  const velocityX = useRef(0)
+  const downX = useRef(0)
+  const dragStartPosition = useRef(0)
+  const nativePosition = useRef(0) // starting position
+  const dragPosition = useRef(nativePosition.current)
 
-  const rafId: reactRef = useRef(null)
+  const rafId = useRef<any>(null)
 
   // componentDidMount
   useEffect(() => {
-    outerWidth.current = outerEl.current.scrollWidth
-    innerWidth.current = innerEl.current.scrollWidth
+    outerWidth.current = outerEl.current!.scrollWidth
+    innerWidth.current = innerEl.current!.scrollWidth
 
     const { left, right }: { left: number; right: number } = getBoundaries({
       outerWidth: outerWidth.current,
       innerWidth: innerWidth.current,
-      elClientLeft: outerEl.current && outerEl.current.clientLeft || 0
+      elClientLeft: (outerEl.current && outerEl.current.clientLeft) || 0
     })
 
     leftBound.current = left
@@ -94,11 +85,11 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     // Update the edge boundaries when the outer element is resized
     // Update the inner width when the children change size
     // Check if ResizeObserver is available on the window, and if no polyfill is supplied by the user via props
-    if (!(window as any).ResizeObserver && !props.ResizeObserver) {
+    if (!(window as any).ResizeObserver && !ResizeObserverPolyfill) {
       throw new Error('No ResizeObserver is available. Please check the docs for instructions on how to add a polyfill.')
     }
 
-    const Ro = (window as any).ResizeObserver || props.ResizeObserver
+    const Ro = (window as any).ResizeObserver || ResizeObserverPolyfill
     // address the 'any' typing of entries
     const observer = new Ro((entries: any[]) => {
       // use the elements data-id to determine whether the inner or the outer has been observed
@@ -109,15 +100,15 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
       const { left, right }: { left: number; right: number } = getBoundaries({
         outerWidth: outerWidth.current,
         innerWidth: innerWidth.current,
-        elClientLeft: outerEl.current && outerEl.current.clientLeft || 0,
+        elClientLeft: (outerEl.current && outerEl.current.clientLeft) || 0,
       })
 
       leftBound.current = left
       rightBound.current = right
 
       // broadcast onFrame event on component mount, as well as when the inner or outer elements change size
-      if (props.onFrame) {
-        props.onFrame({
+      if (onFrame) {
+        onFrame({
           x: roundNum(nativePosition.current),
           outerWidth: outerWidth.current,
           innerWidth: innerWidth.current,
@@ -127,48 +118,43 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
 
       // if a draggerRef has been provided, broadcast changes to it as well
       // and make the setPosition function available
-      if (props.draggerRef) {
-        props.draggerRef({
+      if (draggerRef) {
+        draggerRef({
           setPosition,
           outerWidth: outerWidth.current,
           innerWidth: innerWidth.current,
         })
       }
     })
+
     observer.observe(outerEl.current)
     observer.observe(innerEl.current)
 
-  }, [rightBound.current, leftBound.current, props.disabled]) // keep track of whether the component is disabled
+  }, [rightBound.current, leftBound.current]) // keep track of whether the component is disabled
 
-  // componentDidUpdate
-  useEffect(() => {
-    if (props.friction) {
-      settings.current = { friction: props.friction }
-    }
-  }, [props.friction])
 
   // setPosition is exposed via ref
   function setPosition(position: number) {
-    if (props.disabled) return
+    if (disabled) return
     const finalPosition = Math.min(Math.max(leftBound.current, position), rightBound.current)
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(() => { updateLoop(finalPosition) }) // kick off a new loop
+    rafId.current = window.requestAnimationFrame(() => updateLoop(finalPosition)) // kick off a new loop
   }
 
-  function updateLoop(optionalFinalPosition: any) {
+  function updateLoop(optionalFinalPosition: null | number) {
     // bail out of the loop if the component has been unmounted
     if (!outerEl.current) {
       window.cancelAnimationFrame(rafId.current)
       return
     }
 
-    velocityX.current *= settings.current.friction
+    velocityX.current *= friction
 
     // if a number is provided as a param (optionalFinalPosition), move to that position
-    if (isNumeric(optionalFinalPosition)) {
+    if (optionalFinalPosition !== null) {
 
       const distance = optionalFinalPosition - nativePosition.current
-      const force = distance * (1 - settings.current.friction) - velocityX.current
+      const force = distance * (1 - friction) - velocityX.current
 
       velocityX.current = applyForce({
         velocityX: velocityX.current,
@@ -182,7 +168,7 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
           bound: leftBound.current,
           edge: 'left',
           nativePosition: nativePosition.current,
-          friction: settings.current.friction,
+          friction: friction,
           velocityX: velocityX.current,
         })
       }
@@ -192,11 +178,10 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
           bound: rightBound.current,
           edge: 'right',
           nativePosition: nativePosition.current,
-          friction: settings.current.friction,
+          friction: friction,
           velocityX: velocityX.current,
         })
       }
-
     }
 
     velocityX.current = applyDragForce({
@@ -216,14 +201,14 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
       restPositionX.current = roundNum(nativePosition.current)
     } else {
       // bypass Reacts render method during animation, similar to react-spring
-      if(innerEl.current) {
-      	innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
-      	rafId.current = window.requestAnimationFrame(() => { updateLoop(null) })
-	  }
+      if (innerEl.current) {
+        innerEl.current.style.transform = `translate3d(${roundNum(nativePosition.current)}px,0,0)`
+        rafId.current = window.requestAnimationFrame(() => updateLoop(null))
+      }
     }
 
-    if (props.onFrame) {
-      props.onFrame({
+    if (onFrame) {
+      onFrame({
         x: roundNum(nativePosition.current),
         outerWidth: outerWidth.current,
         innerWidth: innerWidth.current,
@@ -252,16 +237,16 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
     isDragging.current = false
     setIsDraggingStyle(false)
 
-    if (props.onUp) props.onUp()
+    if (onUp) onUp()
 
     // if the slider hasn't dragged sufficiently treat it as a static click
     const moveVector: number = Math.abs(downX.current - e.pageX)
-    if (moveVector < 20 && props.onStaticClick) {
-      props.onStaticClick(e.target)
+    if (moveVector < 20 && onStaticClick) {
+      onStaticClick(e.target)
     }
 
     // Update html element styles
-    if (props.setCursorStyles) {
+    if (setCursorStyles) {
       docStyle.cursor = ''
       docStyle.userSelect = ''
     }
@@ -276,23 +261,23 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
   }
 
   function onStart(e: MouseEvent<any> | any) {
-    if (props.disabled) return
+    if (disabled) return
 
     // dismiss clicks from right or middle buttons
     // (credit: https://github.com/metafizzy/flickity/blob/e2706840532c0ce9c4fc25832e810ad4f9823b61/dist/flickity.pkgd.js#L2176)
     const mouseButton = e.button
-    if (mouseButton && (mouseButton !== 0 && mouseButton !== 1)) return
+    if (mouseButton && mouseButton !== 0 && mouseButton !== 1) return
 
     isDragging.current = true
     setIsDraggingStyle(true)
 
-    if (props.onDown) props.onDown()
+    if (onDown) onDown()
 
     window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(() => { updateLoop(null) }) // kick off a new loop
+    rafId.current = window.requestAnimationFrame(() => updateLoop(null)) // kick off a new loop
 
     // Update <html> element styles
-    if (props.setCursorStyles) {
+    if (setCursorStyles) {
       docStyle.cursor = 'grabbing'
       docStyle.userSelect = 'none'
     }
@@ -316,45 +301,44 @@ const Dragger: React.FC<PropsWithDefaults> = props => {
 
   function onBlur() {
     // reset the browsers automatic container scrolling, caused by tabbing
-    outerEl.current.scrollTo(0, 0)
+    outerEl.current!.scrollTo(0, 0)
   }
 
-  const cursor = props.setCursorStyles && isDraggingStyle ? 'grabbing' : props.setCursorStyles ? 'grab' : null
+  const cursor = setCursorStyles && isDraggingStyle ? 'grabbing' : setCursorStyles ? 'grab' : null
 
   return (
     <div
       data-id='Dragger-outer'
       ref={outerEl}
       className={[
-        props.disabled ? ' is-disabled' : null,
-        props.className,
+        disabled ? ' is-disabled' : null,
+        className,
       ].join(' ')}
       onTouchStart={onStart}
       onMouseDown={onStart}
       onBlur={onBlur}
       style={{
         cursor,
-        ...props.style
+        ...style,
       }}
     >
       <div
         data-id='Dragger-inner'
         ref={innerEl}
-        className={[
-          styles.inner,
-          'dragger-inner'
-        ].join(' ')}
-        style={{ 
+        className='dragger-inner'
+        style={{
           transform: `translateX(${restPositionX.current}px)`,
-          ...props.innerStyle
+          whiteSpace: 'nowrap',
+          userSelect: 'none',
+          WebkitOverflowScrolling: 'touch',
+          willChange: 'transform',
+          display: 'inline-block',
+
+          ...innerStyle
         }}
       >
-        {props.children}
+        {children}
       </div>
     </div>
   )
 }
-
-Dragger.defaultProps = defaultProps
-
-export default Dragger

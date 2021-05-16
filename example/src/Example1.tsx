@@ -13,12 +13,13 @@ const evilExes = [
 
 const Example1 = () => {
   const [items, setItems] = useState([...evilExes])
-  const [frame, setFrame] = useState({})
+
+  const frame = useRef(0)
   const [isDisabled, setIsDisabled] = useState(false)
   const [friction, setFriction] = useState(0.9)
   const [clickedItem, setClickedItem] = useState(null)
   const [isMounted, setIsMounted] = useState(true)
-  const draggerRef = useRef(null)
+  const draggerRef = useRef<any>()
 
   return (
     <section className='section'>
@@ -27,11 +28,13 @@ const Example1 = () => {
           // Dragger internals are exposed via its ref
           draggerRef={r => draggerRef.current = r}
           disabled={isDisabled}
-          ResizeObserver={ResizeObserver}
+          ResizeObserverPolyfill={ResizeObserver}
           friction={friction}
-          onFrame={frame => setFrame(frame)}
+          onFrame={({x}) => frame.current = x}
           className='dragger'
-          onStaticClick={el => {
+          
+          onStaticClick={(el) => {
+            // @ts-ignore
             if (el.nodeName === 'BUTTON') setClickedItem(el.textContent)
           }}
         >
@@ -73,6 +76,7 @@ const Example1 = () => {
           <input
             id='friction'
             type='range'
+            // @ts-ignore
             onChange={e => setFriction(e.currentTarget.value)}
             value={friction}
             min='0.8'
@@ -87,7 +91,7 @@ const Example1 = () => {
         <button
           className="btn"
           onClick={() => {
-            const newPosition = frame.x - 200
+            const newPosition = frame.current - 200
             draggerRef.current.setPosition(newPosition)
           }}
         >
@@ -96,7 +100,7 @@ const Example1 = () => {
         <button
           className="btn"
           onClick={() => {
-            const newPosition = frame.x + 200
+            const newPosition = frame.current + 200
             draggerRef.current.setPosition(newPosition)
           }}
         >

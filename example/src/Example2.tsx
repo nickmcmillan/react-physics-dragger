@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
@@ -68,7 +69,7 @@ const Example2 = () => {
       </p>
 
       <Dragger
-        ResizeObserver={ResizeObserver}
+        ResizeObserverPolyfill={ResizeObserver}
         onFrame={onFrame}
         className='dragger'
       >

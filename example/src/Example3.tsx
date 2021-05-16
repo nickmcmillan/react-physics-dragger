@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useCallback, useRef } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
