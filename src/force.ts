@@ -8,6 +8,7 @@ type DragForceProps = {
   nativePosition: number
   velocityX: number
 }
+
 export function applyDragForce({ isDragging, dragPosition, nativePosition, velocityX }: DragForceProps): number {
   if (!isDragging) return velocityX
 
@@ -16,6 +17,7 @@ export function applyDragForce({ isDragging, dragPosition, nativePosition, veloc
   return velocityX + dragForce
 }
 
+
 type BoundForceProps = {
   bound: number
   edge: 'left' | 'right'
@@ -23,18 +25,20 @@ type BoundForceProps = {
   friction: number
   velocityX: number
 }
+
 export function applyBoundForce({ bound, edge, nativePosition, friction, velocityX }: BoundForceProps): number {
+  const edgeFriction = friction - 0.08
   // bouncing past bound
   const distance = bound - nativePosition
-  let force = distance * (1 - friction)
+  let force = distance * (1 - edgeFriction)
   // calculate resting position with this force
-  const rest = nativePosition + (velocityX + force) / (1 - friction)
+  const rest = nativePosition + (velocityX + force) / (1 - edgeFriction)
   // apply force if resting position is out of bounds
   if ((edge === 'right' && rest > bound) || (edge === 'left' && rest < bound)) {
     return velocityX + force
   } else {
     // if in bounds, apply force to align at bounds
-    force = distance * (1 - friction) - velocityX
+    force = distance * (1 - edgeFriction) - velocityX
     return velocityX + force
   }
 }

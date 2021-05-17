@@ -1,4 +1,4 @@
-type BoundaryVariables = {
+type GetBoundariesProps = {
   outerWidth: number
   innerWidth: number
   elClientLeft: number
@@ -8,7 +8,7 @@ export default function getBoundaries({
   outerWidth,
   innerWidth,
   elClientLeft,
-}: BoundaryVariables): { left: number; right: number } {
+}: GetBoundariesProps): { left: number; right: number } {
   
   const innerIsLessThanOuter = innerWidth < outerWidth
   const leftEdge = elClientLeft

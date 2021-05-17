@@ -1,7 +1,5 @@
-// @ts-nocheck
-import React, { useState, useRef, useCallback, useEffect } from 'react'
-import ResizeObserver from 'resize-observer-polyfill'
-import Dragger from 'react-physics-dragger'
+import React, { useRef, useCallback, useState } from 'react'
+import Dragger, {OnFrameType} from 'react-physics-dragger'
 
 import img0 from './imgs/0.jpg'
 import img1 from './imgs/1.jpg'
@@ -37,25 +35,27 @@ const items = [
   },
 ]
 
+
 const Example2 = () => {
-  const [frame, setFrame] = useState({})
+  const [log, setLog] = useState<OnFrameType>()
+
 
   // https://stackoverflow.com/a/54940592/2255980
-  const innerRefArr = Array.from({ length: items.length }, a => useRef(null)) // eslint-disable-line
-  const outerRefArr = Array.from({ length: items.length }, a => useRef(null)) // eslint-disable-line
+  const innerRefArr = Array.from({ length: items.length }, () => useRef<HTMLImageElement>(null)) // eslint-disable-line
+  const outerRefArr = Array.from({ length: items.length }, () => useRef<HTMLDivElement>(null)) // eslint-disable-line
 
-  const onFrame = useCallback((frame) => {
+  const onFrame = useCallback((frame: OnFrameType) => {
 
     // bypass Reacts render method to perform frequent style updates, similar concept to React Spring
     const parallaxFactor = -10
     innerRefArr.forEach((ref, i) => {
-      const x = (frame.x + outerRefArr[i].current.offsetLeft) / parallaxFactor
-      ref.current.style.transform = `translateX(${x}px)`
+      const transformX = (frame.x + outerRefArr[i].current!.offsetLeft) / parallaxFactor
+      ref.current!.style.transform = `translateX(${transformX}px)`
     })
 
      // And then only using state here to update the output log in the DOM
-    setFrame(frame)
-    
+    setLog(frame)
+
   }, [innerRefArr, outerRefArr])
 
 
@@ -69,9 +69,9 @@ const Example2 = () => {
       </p>
 
       <Dragger
-        ResizeObserverPolyfill={ResizeObserver}
         onFrame={onFrame}
         className='dragger'
+        friction={0.95}
       >
         {items.map((item, i) => (
           <div className='item-img' key={item.id} ref={outerRefArr[i]}>
@@ -80,15 +80,19 @@ const Example2 = () => {
         ))}
       </Dragger>
 
-      <pre>
-        outerWidth: {frame.outerWidth}px
-        <br />
-        innerWidth: {frame.innerWidth}px
-        <br />
-        x: {frame.x}px
-        <br />
-        progress: {frame.progress} <br />
-      </pre>
+      {log &&
+        <>
+          <pre>
+            outerWidth: {log.outerWidth}px
+          <br />
+            innerWidth: {log.innerWidth}px
+          <br />
+            x: {log.x}px
+          <br />
+            progress: {log.progress} <br />
+          </pre>
+        </>
+      }
     </section>
   )
 }

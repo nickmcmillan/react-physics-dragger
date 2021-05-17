@@ -1,47 +1,55 @@
-import React, { useState, useEffect, useRef, MouseEvent, ReactNode } from 'react'
+import React, { useState, useEffect, useRef, ReactNode } from 'react'
 
-import { roundNum } from './utils'
 import { applyDragForce, applyBoundForce } from './force'
 import getBoundaries from './getBoundaries'
+import { roundNum, isMouseEvent } from './utils'
 
-type draggerRefParams = { setPosition: Function; outerWidth: number; innerWidth: number; }
-type onFrameParams = { x: number; outerWidth: number; innerWidth: number; progress: number }
+type draggerRefParams = { 
+  setPosition: (position: number, instant: boolean) => void
+  outerWidth: number
+  innerWidth: number
+}
+
+export type OnFrameType = {
+  x: number
+  outerWidth: number
+  innerWidth: number
+  progress: number
+}
 
 type TProps = {
   friction?: number
-  ResizeObserverPolyfill?: any
+  disabled?: boolean
+  setCursorStyles?: boolean
   draggerRef?: (args: draggerRefParams) => void
-  onFrame?: (args: onFrameParams) => void
+  onFrame?: (args: OnFrameType) => void
   onStaticClick?: (e: EventTarget) => void
   onDown?: () => void
   onUp?: () => void
-  setCursorStyles?: boolean
-  disabled?: boolean
+  style?: React.CSSProperties
+  innerStyle?: React.CSSProperties
   className?: string
-  style?: any
-  innerStyle?: any
   children: ReactNode
+  ResizeObserverPolyfill?: Function
 }
 
+
+
 export default function Dragger({
-  friction = 0.92,
+  friction = 0.95,
   disabled = false,
   setCursorStyles = true,
   onFrame,
-  ResizeObserverPolyfill,
   onUp,
   onDown,
   onStaticClick,
-  className,
-  innerStyle,
-  children,
-  style,
   draggerRef,
+  style,
+  innerStyle,
+  className,
+  children,
+  ResizeObserverPolyfill,
 }: TProps) {
-
-  console.log('render')
-
-  const docStyle = typeof window !== 'undefined' ? document.documentElement.style : { cursor: '', userSelect: ''}
 
   // DOM element refs
   const outerEl = useRef<HTMLDivElement>(null)
@@ -56,7 +64,6 @@ export default function Dragger({
   // User input states
   const isDragging = useRef(false) // doesn't update render
   const [isDraggingStyle, setIsDraggingStyle] = useState(false) // does update render
-  const inputType = useRef<'mouse' | 'touch' | ''>('')
 
   // Dragging state
   const restPositionX = useRef(0)
@@ -66,14 +73,17 @@ export default function Dragger({
   const nativePosition = useRef(0) // starting position
   const dragPosition = useRef(nativePosition.current)
 
-  const rafId = useRef<any>(null)
+  const rafId = useRef<number | null>(null)
 
+  const docStyle = typeof window !== 'undefined' ? document.documentElement.style : { cursor: '', userSelect: '' }
+  const mouseCursorStyle = setCursorStyles && isDraggingStyle ? 'grabbing' : setCursorStyles ? 'grab' : undefined
+  
   // componentDidMount
   useEffect(() => {
     outerWidth.current = outerEl.current!.scrollWidth
     innerWidth.current = innerEl.current!.scrollWidth
 
-    const { left, right }: { left: number; right: number } = getBoundaries({
+    const { left, right } = getBoundaries({
       outerWidth: outerWidth.current,
       innerWidth: innerWidth.current,
       elClientLeft: (outerEl.current && outerEl.current.clientLeft) || 0
@@ -94,8 +104,9 @@ export default function Dragger({
     const observer = new Ro((entries: any[]) => {
       // use the elements data-id to determine whether the inner or the outer has been observed
       const id = entries[0].target.dataset.id
-      if (id === 'Dragger-inner') innerWidth.current = entries[0].contentRect.width
-      if (id === 'Dragger-outer') outerWidth.current = entries[0].contentRect.width
+      
+      if (id === 'dragger-inner') innerWidth.current = entries[0].contentRect.width
+      if (id === 'dragger-outer') outerWidth.current = entries[0].contentRect.width
 
       const { left, right }: { left: number; right: number } = getBoundaries({
         outerWidth: outerWidth.current,
@@ -130,25 +141,50 @@ export default function Dragger({
     observer.observe(outerEl.current)
     observer.observe(innerEl.current)
 
-  }, [rightBound.current, leftBound.current]) // keep track of whether the component is disabled
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
 
   // setPosition is exposed via ref
-  function setPosition(position: number) {
+  function setPosition(position: number, instant: boolean) {
     if (disabled) return
     const finalPosition = Math.min(Math.max(leftBound.current, position), rightBound.current)
-    window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(() => updateLoop(finalPosition)) // kick off a new loop
+
+    // jump instantly to position, without animation
+    if (instant) {
+      window.cancelAnimationFrame(rafId.current!) // cancel any existing loop
+      if (innerEl.current) {
+        nativePosition.current = finalPosition
+        restPositionX.current = finalPosition
+        innerEl.current.style.transform = `translate3d(${roundNum(finalPosition)}px,0,0)`
+
+        if (onFrame) {
+          onFrame({
+            x: roundNum(nativePosition.current),
+            outerWidth: outerWidth.current,
+            innerWidth: innerWidth.current,
+            progress: roundNum(nativePosition.current / (outerWidth.current - innerWidth.current))
+          })
+        }
+      }
+    } else {
+      window.cancelAnimationFrame(rafId.current!) // cancel any existing loop
+      rafId.current = window.requestAnimationFrame(() => updateLoop(finalPosition)) // kick off a new loop
+    }
   }
+
 
   function updateLoop(optionalFinalPosition: null | number) {
     // bail out of the loop if the component has been unmounted
     if (!outerEl.current) {
-      window.cancelAnimationFrame(rafId.current)
+      window.cancelAnimationFrame(rafId.current!)
       return
     }
 
-    velocityX.current *= friction
+    velocityX.current *= friction // apply friction to velocity, therefore slowing it down
 
     // if a number is provided as a param (optionalFinalPosition), move to that position
     if (optionalFinalPosition !== null) {
@@ -193,7 +229,7 @@ export default function Dragger({
 
     if (!isDragging.current && isInfinitesimal) {
       // no longer dragging and inertia has stopped
-      window.cancelAnimationFrame(rafId.current)
+      window.cancelAnimationFrame(rafId.current!)
       restPositionX.current = roundNum(nativePosition.current)
     } else {
       // bypass Reacts render method during animation, similar to react-spring
@@ -203,6 +239,7 @@ export default function Dragger({
       }
     }
 
+    // optional callback function prop
     if (onFrame) {
       onFrame({
         x: roundNum(nativePosition.current),
@@ -213,30 +250,43 @@ export default function Dragger({
     }
   }
 
-  // address 'any' typing of event // MouseEvent does not have property 'touches'
-  function onMove(e: any) {
-    const x: number = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
-    const moveVector: number = x - downX.current
+  function onMouseMove(e: any) {
+    const x = e.pageX
+    onMove(x)
+  }
+  
+  function onTouchMove(e: any) {
+    const x = e.touches[0].pageX
+    onMove(x)
+  }
 
+  function onMove(x: number) {
     // gradually increase friction as the dragger is pulled beyond bounds
     // credit: https://github.com/metafizzy/flickity/blob/master/dist/flickity.pkgd.js#L2894
-    let dragX: number = dragStartPosition.current + moveVector
-    const originBound: number = Math.max(rightBound.current, dragStartPosition.current)
-    dragX = dragX > originBound ? (dragX + originBound) * 0.5 : dragX
-    const endBound: number = Math.min(leftBound.current, dragStartPosition.current)
-    dragX = dragX < endBound ? (dragX + endBound) * 0.5 : dragX
+    const moveVector = x - downX.current
+    let dragX = dragStartPosition.current + moveVector
+    
+    const originBound = Math.max(rightBound.current, dragStartPosition.current)
+    if (dragX > originBound) {
+      dragX = (dragX + originBound) * 0.5
+    }
+
+    const endBound = Math.min(leftBound.current, dragStartPosition.current)
+    if (dragX < endBound) {
+      dragX = (dragX + endBound) * 0.5
+    }
 
     dragPosition.current = dragX
   }
 
-  function onRelease(e: MouseEvent<any> | any) {
+  function onRelease(e: any) {
     isDragging.current = false
     setIsDraggingStyle(false)
 
-    if (onUp) onUp()
+    if (onUp) onUp() // optional props
 
     // if the slider hasn't dragged sufficiently treat it as a static click
-    const moveVector: number = Math.abs(downX.current - e.pageX)
+    const moveVector = Math.abs(downX.current - e.pageX)
     if (moveVector < 20 && onStaticClick) {
       onStaticClick(e.target)
     }
@@ -247,18 +297,18 @@ export default function Dragger({
       docStyle.userSelect = ''
     }
 
-    if (inputType.current === 'mouse') {
-      window.removeEventListener('mousemove', onMove)
+
+    if (isMouseEvent(e)) {
+      window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onRelease)
     } else {
-      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchmove', onTouchMove)
       window.removeEventListener('touchend', onRelease)
     }
   }
 
-  function onStart(e: MouseEvent<any> | any) {
+  function onMouseStart(e: React.MouseEvent) {
     if (disabled) return
-
     // dismiss clicks from right or middle buttons
     // (credit: https://github.com/metafizzy/flickity/blob/e2706840532c0ce9c4fc25832e810ad4f9823b61/dist/flickity.pkgd.js#L2176)
     const mouseButton = e.button
@@ -267,10 +317,7 @@ export default function Dragger({
     isDragging.current = true
     setIsDraggingStyle(true)
 
-    if (onDown) onDown()
-
-    window.cancelAnimationFrame(rafId.current) // cancel any existing loop
-    rafId.current = window.requestAnimationFrame(() => updateLoop(null)) // kick off a new loop
+    if (onDown) onDown() // Optional Prop
 
     // Update <html> element styles
     if (setCursorStyles) {
@@ -278,21 +325,32 @@ export default function Dragger({
       docStyle.userSelect = 'none'
     }
 
-    inputType.current = e.type === 'mousedown' ? 'mouse' : 'touch'
+    window.cancelAnimationFrame(rafId.current!) // cancel any existing loop
+    rafId.current = window.requestAnimationFrame(() => updateLoop(null)) // kick off a new loop
 
-    downX.current = inputType.current === 'mouse' ? e.pageX : e.touches[0].pageX
+    downX.current = e.pageX
     dragStartPosition.current = nativePosition.current
 
-    // initial onMove needed to set the starting mouse position
-    onMove(e)
+    onMouseMove(e) // initial onMove needed to set the starting mouse position
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onRelease)
+  }
 
-    if (inputType.current === 'mouse') {
-      window.addEventListener('mousemove', onMove)
-      window.addEventListener('mouseup', onRelease)
-    } else if (inputType.current === 'touch') {
-      window.addEventListener('touchmove', onMove)
-      window.addEventListener('touchend', onRelease)
-    }
+  function onTouchStart(e: React.TouchEvent) {
+    if (disabled) return
+    isDragging.current = true
+
+    if (onDown) onDown() // Optional Prop
+
+    window.cancelAnimationFrame(rafId.current!) // cancel any existing loop
+    rafId.current = window.requestAnimationFrame(() => updateLoop(null)) // kick off a new loop
+
+    downX.current = e.touches[0].pageX
+    dragStartPosition.current = nativePosition.current    
+
+    onTouchMove(e)
+    window.addEventListener('touchmove', onTouchMove)
+    window.addEventListener('touchend', onRelease)
   }
 
   function onBlur() {
@@ -300,26 +358,24 @@ export default function Dragger({
     outerEl.current!.scrollTo(0, 0)
   }
 
-  const cursor = setCursorStyles && isDraggingStyle ? 'grabbing' : setCursorStyles ? 'grab' : null
-
   return (
     <div
-      data-id='Dragger-outer'
+      data-id='dragger-outer'
       ref={outerEl}
       className={[
         disabled ? ' is-disabled' : null,
         className,
       ].join(' ')}
-      onTouchStart={onStart}
-      onMouseDown={onStart}
+      onTouchStart={onTouchStart}
+      onMouseDown={onMouseStart}
       onBlur={onBlur}
       style={{
-        cursor,
+        cursor: mouseCursorStyle,
         ...style,
       }}
     >
       <div
-        data-id='Dragger-inner'
+        data-id='dragger-inner'
         ref={innerEl}
         className='dragger-inner'
         style={{
@@ -329,7 +385,6 @@ export default function Dragger({
           WebkitOverflowScrolling: 'touch',
           willChange: 'transform',
           display: 'inline-block',
-
           ...innerStyle
         }}
       >

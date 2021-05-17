@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
-import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
+
 
 const evilExes = [
   'Matthew Patel',
@@ -16,7 +16,7 @@ const Example1 = () => {
 
   const frame = useRef(0)
   const [isDisabled, setIsDisabled] = useState(false)
-  const [friction, setFriction] = useState(0.9)
+  const [friction, setFriction] = useState(0.93)
   const [clickedItem, setClickedItem] = useState(null)
   const [isMounted, setIsMounted] = useState(true)
   const draggerRef = useRef<any>()
@@ -28,12 +28,12 @@ const Example1 = () => {
           // Dragger internals are exposed via its ref
           draggerRef={r => draggerRef.current = r}
           disabled={isDisabled}
-          ResizeObserverPolyfill={ResizeObserver}
           friction={friction}
           onFrame={({x}) => frame.current = x}
           className='dragger'
           
           onStaticClick={(el) => {
+          
             // @ts-ignore
             if (el.nodeName === 'BUTTON') setClickedItem(el.textContent)
           }}
@@ -79,8 +79,8 @@ const Example1 = () => {
             // @ts-ignore
             onChange={e => setFriction(e.currentTarget.value)}
             value={friction}
-            min='0.8'
-            max='0.95'
+            min='0.6'
+            max='0.99'
             step='0.01'
           />
           <span className='sub'> {friction}</span>
@@ -123,6 +123,24 @@ const Example1 = () => {
           }}
         >
           Right edge
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            draggerRef.current.setPosition(0, true)
+          }}
+        >
+          Left edge (instant)
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            const outer = draggerRef.current.outerWidth
+            const inner = draggerRef.current.innerWidth
+            draggerRef.current.setPosition(outer - inner, true)
+          }}
+        >
+          Right edge (instant)
         </button>
         <button
           className="btn"

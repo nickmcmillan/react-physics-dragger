@@ -8,8 +8,10 @@
   },
   "parserOptions": {
     "ecmaVersion": 2020,
+    "sourceType": "module",
     "ecmaFeatures": {
       "legacyDecorators": true,
+      "modules": true,
       "jsx": true
     }
   },
