@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, MouseEvent, ReactNode } from 'react'
 
 import { roundNum } from './utils'
-import { applyDragForce, applyBoundForce, applyForce } from './force'
+import { applyDragForce, applyBoundForce } from './force'
 import getBoundaries from './getBoundaries'
 
 type draggerRefParams = { setPosition: Function; outerWidth: number; innerWidth: number; }
@@ -36,7 +36,7 @@ export default function Dragger({
   innerStyle,
   children,
   style,
-  draggerRef
+  draggerRef,
 }: TProps) {
 
   console.log('render')
@@ -155,11 +155,7 @@ export default function Dragger({
 
       const distance = optionalFinalPosition - nativePosition.current
       const force = distance * (1 - friction) - velocityX.current
-
-      velocityX.current = applyForce({
-        velocityX: velocityX.current,
-        force,
-      })
+      velocityX.current = velocityX.current + force // apply force
 
     } else {
 

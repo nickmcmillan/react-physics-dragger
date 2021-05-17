@@ -2,43 +2,39 @@
 // https://www.youtube.com/watch?v=90oMnMFozEE
 // https://codepen.io/desandro/pen/QbPKEq
 
-export const applyForce = ({ velocityX, force }: { velocityX: number; force: number }): number => velocityX + force
-
-interface DragForce {
+type DragForceProps = {
   isDragging: boolean
   dragPosition: number
   nativePosition: number
   velocityX: number
 }
-
-export const applyDragForce = ({ isDragging, dragPosition, nativePosition, velocityX }: DragForce): number => {
+export function applyDragForce({ isDragging, dragPosition, nativePosition, velocityX }: DragForceProps): number {
   if (!isDragging) return velocityX
 
-  const dragVelocity: number = dragPosition - nativePosition
-  const dragForce: number = dragVelocity - velocityX
+  const dragVelocity = dragPosition - nativePosition
+  const dragForce = dragVelocity - velocityX
   return velocityX + dragForce
 }
 
-interface BoundForce {
+type BoundForceProps = {
   bound: number
-  edge: string
+  edge: 'left' | 'right'
   nativePosition: number
   friction: number
   velocityX: number
 }
-
-export const applyBoundForce = ({ bound, edge, nativePosition, friction, velocityX }: BoundForce): number => {
+export function applyBoundForce({ bound, edge, nativePosition, friction, velocityX }: BoundForceProps): number {
   // bouncing past bound
-  const distance: number = bound - nativePosition
-  let force: number = distance * (1 - friction)
+  const distance = bound - nativePosition
+  let force = distance * (1 - friction)
   // calculate resting position with this force
-  const rest: number = nativePosition + (velocityX + force) / (1 - friction)
+  const rest = nativePosition + (velocityX + force) / (1 - friction)
   // apply force if resting position is out of bounds
   if ((edge === 'right' && rest > bound) || (edge === 'left' && rest < bound)) {
-    return applyForce({ velocityX, force })
+    return velocityX + force
   } else {
     // if in bounds, apply force to align at bounds
     force = distance * (1 - friction) - velocityX
-    return applyForce({ velocityX, force })
+    return velocityX + force
   }
 }
