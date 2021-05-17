@@ -1,34 +1,27 @@
 {
-   "parser": "@typescript-eslint/parser",
-   "extends": [
-     "standard",
-     "standard-react"
-   ],
-   "env": {
-     "es6": true,
-     "jest": true
-   },
-   "plugins": [
-     "react",
-     "@typescript-eslint"
-   ],
-   "parserOptions": {
-     "sourceType": "module"
-   },
-   "rules": {
-     "space-before-function-paren": 0,
-     "react/jsx-boolean-value": 0,
-     "@typescript-eslint/explicit-function-return-type": "off",
-     "@typescript-eslint/explicit-member-accessibility": "off",
-     "@typescript-eslint/member-ordering": "error",
-     "@typescript-eslint/no-explicit-any": "off",
-     "@typescript-eslint/no-unused-vars": "off",
-     "@typescript-eslint/prefer-interface": "off",
-     "react/jsx-indent": "off",
-     "react/jsx-indent-props": "off",
-     "@typescript-eslint/no-var-requires": "off",
-     "comma-dangle": ["error", "only-multiline"],
-     "indent": ["error", 2]
-   }
- }
- 
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "plugin:@typescript-eslint/eslint-recommended"
+  ],
+  "env": {
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "legacyDecorators": true,
+      "modules": true,
+      "jsx": true
+    }
+  },
+  "settings": {
+    "react": {
+      "version": "16"
+    }
+  },
+  "rules": {
+    "space-before-function-paren": "off",
+    "comma-dangle": "off"
+  }
+}

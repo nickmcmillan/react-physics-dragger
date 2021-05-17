@@ -1,8 +1,7 @@
 import React, { useCallback, useRef } from 'react'
-import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
 
-function reverseNumber(num, min, max) {
+function reverseNumber(num: number, min: number, max: number) {
   return max + min - num
 }
 
@@ -12,6 +11,7 @@ const Example2 = () => {
   // bypass Reacts render method to perform frequent style updates, similar concept to React Spring
   const onFrame = useCallback(({ progress }) => {
     const opacity = reverseNumber(progress, 0, 1)
+    // @ts-ignore
     ref.current.style.opacity = opacity
   }, [])
 
@@ -20,7 +20,6 @@ const Example2 = () => {
       <p>Or you could use onFrame to change other CSS properties...</p>
 
       <Dragger
-        ResizeObserver={ResizeObserver}
         onFrame={onFrame}
         className='dragger'
       >

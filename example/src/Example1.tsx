@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
-import ResizeObserver from 'resize-observer-polyfill'
 import Dragger from 'react-physics-dragger'
+
 
 const evilExes = [
   'Matthew Patel',
@@ -13,12 +13,13 @@ const evilExes = [
 
 const Example1 = () => {
   const [items, setItems] = useState([...evilExes])
-  const [frame, setFrame] = useState({})
+
+  const frame = useRef(0)
   const [isDisabled, setIsDisabled] = useState(false)
-  const [friction, setFriction] = useState(0.9)
+  const [friction, setFriction] = useState(0.93)
   const [clickedItem, setClickedItem] = useState(null)
   const [isMounted, setIsMounted] = useState(true)
-  const draggerRef = useRef(null)
+  const draggerRef = useRef<any>()
 
   return (
     <section className='section'>
@@ -27,11 +28,13 @@ const Example1 = () => {
           // Dragger internals are exposed via its ref
           draggerRef={r => draggerRef.current = r}
           disabled={isDisabled}
-          ResizeObserver={ResizeObserver}
           friction={friction}
-          onFrame={frame => setFrame(frame)}
+          onFrame={({x}) => frame.current = x}
           className='dragger'
-          onStaticClick={el => {
+          
+          onStaticClick={(el) => {
+          
+            // @ts-ignore
             if (el.nodeName === 'BUTTON') setClickedItem(el.textContent)
           }}
         >
@@ -73,10 +76,11 @@ const Example1 = () => {
           <input
             id='friction'
             type='range'
+            // @ts-ignore
             onChange={e => setFriction(e.currentTarget.value)}
             value={friction}
-            min='0.8'
-            max='0.95'
+            min='0.6'
+            max='0.99'
             step='0.01'
           />
           <span className='sub'> {friction}</span>
@@ -87,7 +91,7 @@ const Example1 = () => {
         <button
           className="btn"
           onClick={() => {
-            const newPosition = frame.x - 200
+            const newPosition = frame.current - 200
             draggerRef.current.setPosition(newPosition)
           }}
         >
@@ -96,7 +100,7 @@ const Example1 = () => {
         <button
           className="btn"
           onClick={() => {
-            const newPosition = frame.x + 200
+            const newPosition = frame.current + 200
             draggerRef.current.setPosition(newPosition)
           }}
         >
@@ -119,6 +123,24 @@ const Example1 = () => {
           }}
         >
           Right edge
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            draggerRef.current.setPosition(0, true)
+          }}
+        >
+          Left edge (instant)
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            const outer = draggerRef.current.outerWidth
+            const inner = draggerRef.current.innerWidth
+            draggerRef.current.setPosition(outer - inner, true)
+          }}
+        >
+          Right edge (instant)
         </button>
         <button
           className="btn"

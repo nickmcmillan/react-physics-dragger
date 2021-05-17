@@ -3,19 +3,41 @@
   "homepage": "https://nickmcmillan.github.io/react-physics-dragger",
   "version": "0.0.0",
   "license": "MIT",
-  "private": true,
-  "dependencies": {
-    "prop-types": "^15.6.2",
-    "react": "link:../node_modules/react",
-    "react-dom": "link:../node_modules/react-dom",
-    "react-physics-dragger": "link:..",
-    "react-scripts": "^1.1.4",
-    "resize-observer-polyfill": "^1.5.1"
-  },
+  "private": false,
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "start": "node ../node_modules/react-scripts/bin/react-scripts.js start",
+    "build": "node ../node_modules/react-scripts/bin/react-scripts.js build",
+    "test": "node ../node_modules/react-scripts/bin/react-scripts.js test",
+    "eject": "node ../node_modules/react-scripts/bin/react-scripts.js eject"
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "file:../node_modules/@testing-library/jest-dom",
+    "@testing-library/react": "file:../node_modules/@testing-library/react",
+    "@testing-library/user-event": "file:../node_modules/@testing-library/user-event",
+    "@types/jest": "file:../node_modules/@types/jest",
+    "@types/node": "file:../node_modules/@types/node",
+    "@types/react-dom": "file:../node_modules/@types/react-dom",
+    "react": "file:../node_modules/react",
+    "react-dom": "file:../node_modules/react-dom",
+    "react-physics-dragger": "file:..",
+    "react-scripts": "file:../node_modules/react-scripts",
+    "resize-observer-polyfill": "^1.5.1",
+    "typescript": "file:../node_modules/typescript"
+  },
+  "devDependencies": {
+    "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
+    "@types/react": "file:../node_modules/@types/react"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
